@@ -548,7 +548,7 @@ function update()
                     } else if (ghost.current !== Phaser.LEFT && currentTile.x >= 14 && currentTile.x <= 15 && currentTile.y >= 9 && currentTile.y <= 10) {
                         ghost.sprite.setPosition(ghost.turningPoint.x, ghost.turningPoint.y);
                         ghost.move(Phaser.LEFT);
-                    } else if (ghost.current === Phaser.UP && (currentTile.x >= 11 || currentTile.x <= 13) && currentTile.y == 7) {
+                    } else if (ghost.current === Phaser.UP && (currentTile.x >= 11 || currentTile.x <= 13) && currentTile.y === 7) {
                         ghost.sprite.setPosition(ghost.turningPoint.x, ghost.turningPoint.y);
                         ghost.mode = getCurrentMode();
                         return;

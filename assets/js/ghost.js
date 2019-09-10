@@ -136,7 +136,7 @@ export default class Ghost {
     }
 
     isSafe(index) {
-        if (this.mode == this.RETURNING_HOME && this.mode == this.EXIT_HOME)
+        if (this.mode === this.RETURNING_HOME && this.mode === this.EXIT_HOME)
         {
             for (let i of this.safetileReturn) {
                 if(i===index) return true;
