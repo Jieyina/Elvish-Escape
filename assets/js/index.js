@@ -565,6 +565,7 @@ function update()
                     break;
             }
         }
+        ghost.drawDebug(graphics);
     }
 
     for (let i = player.life; i < 3; i++) {

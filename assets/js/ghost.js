@@ -111,12 +111,12 @@ export default class Ghost {
         this.current = direction;
 
         this.speed = this.ghostSpeed;
-        if (this.mode === this.SCATTER) {
+        if (this.mode == this.SCATTER) {
             this.speed = this.ghostScatterSpeed;
         }
-        if (this.mode === this.RANDOM) {
+        if (this.mode == this.RANDOM) {
             this.speed = this.ghostFrightenedSpeed;
-        } else if (this.mode === this.RETURNING_HOME) {
+        } else if (this.mode == this.RETURNING_HOME) {
             this.speed = this.cruiseElroySpeed;
         }
 
@@ -136,7 +136,7 @@ export default class Ghost {
     }
 
     isSafe(index) {
-        if (this.mode === this.RETURNING_HOME && this.mode === this.EXIT_HOME)
+        if (this.mode == this.RETURNING_HOME && this.mode == this.EXIT_HOME)
         {
             for (let i of this.safetileReturn) {
                 if(i===index) return true;
@@ -169,7 +169,7 @@ export default class Ghost {
         let thickness = 4;
         let alpha = 1;
         let color = 0x00ff00;        
-        for (var t = 0; t < 9; t++)
+        for (var t = 5; t < 9; t++)
         {
             if (this.directions[t] === null || this.directions[t] === undefined)
             {
