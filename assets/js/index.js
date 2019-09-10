@@ -290,39 +290,17 @@ function update()
 {
     //console.log(ghosts[0].mode);
     //console.log(ghosts[0].ghostDestination);
-    console.log(ghosts[3].current);
-    console.log(ghosts[3].mode);
-    player.setDirections(getDirection(map, layer1, player.sprite));
+    //console.log(ghosts[3].current);
+    //console.log(ghosts[3].mode);
 
     if(!player.playing) {
         for(let ghost of ghosts) {
             ghost.freeze();
-        }        
+        }
     }
-
+    player.setDirections(getDirection(map, layer1, player.sprite));
     player.setTurningPoint(getTurningPoint(map, player.sprite));
-
-    if (cursors.left.isDown)
-    {
-        player.setTurn(Phaser.LEFT);
-    }
-    else if (cursors.right.isDown)
-    {
-        player.setTurn(Phaser.RIGHT);
-    }   
-    else if (cursors.up.isDown)
-    {
-        player.setTurn(Phaser.UP);
-    }
-    else if (cursors.down.isDown)
-    {
-        player.setTurn(Phaser.DOWN);
-    }
-    else
-    {
-        player.setTurn(Phaser.NONE);   
-    }
-
+    player.checkKeys(cursors);
     player.update();
 
     if(player.active) {
@@ -455,7 +433,7 @@ function update()
                                 default:
                                     break;
                             }
-                            var dist = ghost.returnDestination.distance(decision);
+                            var dist = ghost.returnDestinationreturnDestination.distance(decision);
                             if (dist < distanceToObj) {
                                 bestDecision = direction;
                                 distanceToObj = dist;
@@ -566,7 +544,7 @@ function update()
                     break;
             }
         }
-        ghost.drawDebug(graphics);
+        //ghost.drawDebug(graphics);
     }
 
     for (let i = player.life; i < 3; i++) {

@@ -12,7 +12,7 @@ export default class Ghost {
         this.ghostScatterSpeed = 75;
         this.ghostFrightenedSpeed = 50;
         this.ghostDestination = new Phaser.Math.Vector2();
-        this.returnDestination = new Phaser.Math.Vector2(12 * 32 + 16, 10 * 32 + 16);
+        this.returnDestination = new Phaser.Math.Vector2(12 * 32 + 16, 9 * 32 + 16);
         this.cruiseElroySpeed = 110;
         this.moveTo = new Phaser.Geom.Point();
         // empty tile
