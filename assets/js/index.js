@@ -195,10 +195,10 @@ function create ()
 
     // layer for background scene
     layer1 = map.createStaticLayer("Layer 1", tileset, 0, 0);
-    layer1.setCollisionByProperty({ collides: true});
+    // layer1.setCollisionByProperty({ collides: true});
 
     // place player in the scene
-    let spawnPoint = map.findObject("Objects", obj => obj.name === "Player");  
+    let spawnPoint = map.findObject("Objects", obj => obj.name == "Player");
     let position = new Phaser.Geom.Point(spawnPoint.x + offset, spawnPoint.y - offset);
     player = new Player(this, position, Animation.Player, function() {
         if(player.life <= 0) {
@@ -355,7 +355,7 @@ function update()
     if (TIME_MODES[currentMode].interval !== -1 && !isPaused && changeModeTimer < this.time.now) {
         currentMode++;
         changeModeTimer = this.time.now + TIME_MODES[currentMode].interval;
-        if (TIME_MODES[currentMode].mode === "chase") {
+        if (TIME_MODES[currentMode].mode == "chase") {
             sendAttackOrder();
         } else {
             sendScatterOrder();
@@ -381,7 +381,7 @@ function update()
         ghosts[1].sprite.anims.play('ghost-red-move', true);
         ghosts[2].sprite.anims.play('ghost-orange-move', true);
         ghosts[3].sprite.anims.play('ghost-pink-move', true);
-        if (TIME_MODES[currentMode].mode === "chase") {
+        if (TIME_MODES[currentMode].mode == "chase") {
             sendAttackOrder();
         } else {
             sendScatterOrder();
@@ -394,7 +394,7 @@ function update()
     }
 
     for(let ghost of ghosts) {
-        if (ghost.isAttacking && (ghost.mode === ghost.SCATTER || ghost.mode === ghost.CHASE)) {
+        if (ghost.isAttacking && (ghost.mode == ghost.SCATTER || ghost.mode == ghost.CHASE)) {
             ghost.ghostDestination = getGhostDestination(ghost);
             ghost.mode = ghost.CHASE;
         }
@@ -531,7 +531,7 @@ function update()
                 case ghost.AT_HOME:
                     if (!ghost.canContinue) {
                         ghost.sprite.setPosition(ghost.turningPoint.x, ghost.turningPoint.y);
-                        var dir = (ghost.current === Phaser.LEFT) ? Phaser.RIGHT : Phaser.LEFT;
+                        var dir = (ghost.current == Phaser.LEFT) ? Phaser.RIGHT : Phaser.LEFT;
                         ghost.move(dir);
                     } else {
                         ghost.move(ghost.current);
@@ -548,7 +548,7 @@ function update()
                     } else if (ghost.current !== Phaser.LEFT && currentTile.x >= 14 && currentTile.x <= 15 && currentTile.y >= 9 && currentTile.y <= 10) {
                         ghost.sprite.setPosition(ghost.turningPoint.x, ghost.turningPoint.y);
                         ghost.move(Phaser.LEFT);
-                    } else if (ghost.current === Phaser.UP && (currentTile.x >= 11 || currentTile.x <= 13) && currentTile.y === 7) {
+                    } else if (ghost.current == Phaser.UP && (currentTile.x >= 11 || currentTile.x <= 13) && currentTile.y == 7) {
                         ghost.sprite.setPosition(ghost.turningPoint.x, ghost.turningPoint.y);
                         ghost.mode = getCurrentMode();
                         return;
@@ -644,11 +644,11 @@ function getGhostDestination(ghost) {
             var dest = new Phaser.Math.Vector2(player.sprite.x, player.sprite.y);
             var dir = player.current;
             var offsetX = 0, offsetY = 0;
-            if (dir === Phaser.LEFT || dir === Phaser.RIGHT) {
-                offsetX = (dir === Phaser.RIGHT) ? -4 : 4;
+            if (dir == Phaser.LEFT || dir == Phaser.RIGHT) {
+                offsetX = (dir == Phaser.RIGHT) ? -4 : 4;
             }
             if (dir === Phaser.UP || dir === Phaser.DOWN) {
-                offsetY = (dir === Phaser.DOWN) ? -4 : 4;
+                offsetY = (dir == Phaser.DOWN) ? -4 : 4;
             }
             offsetX *= gridSize;
             offsetY *= gridSize;
@@ -703,7 +703,7 @@ function sendAttackOrder() {
 
 function getCurrentMode() {
     if (!isPaused) {
-        if (TIME_MODES[currentMode].mode === "scatter") {
+        if (TIME_MODES[currentMode].mode == "scatter") {
             return "scatter";
         } else {
             return "chase";
