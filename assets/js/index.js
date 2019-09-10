@@ -195,7 +195,7 @@ function create ()
 
     // layer for background scene
     layer1 = map.createStaticLayer("Layer 1", tileset, 0, 0);
-    // layer1.setCollisionByProperty({ collides: true});
+    layer1.setCollisionByProperty({ collides: true});
 
     // place player in the scene
     let spawnPoint = map.findObject("Objects", obj => obj.name == "Player");
@@ -242,6 +242,7 @@ function create ()
      });
 
     sendExitOrder(ghosts[3]);
+    ghosts[1].mode = getCurrentMode();
 
     this.physics.add.collider(player.sprite, layer1);
     this.physics.add.collider(ghostsGroup, layer1);
@@ -529,7 +530,7 @@ function update()
                     break;
 
                 case ghost.AT_HOME:
-                    if (!ghost.canContinue) {
+                    if (!canContinue) {
                         ghost.sprite.setPosition(ghost.turningPoint.x, ghost.turningPoint.y);
                         var dir = (ghost.current == Phaser.LEFT) ? Phaser.RIGHT : Phaser.LEFT;
                         ghost.move(dir);
