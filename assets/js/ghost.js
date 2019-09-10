@@ -67,9 +67,9 @@ export default class Ghost {
     attack() {
         if (this.mode !== this.RETURNING_HOME) {
             this.isAttacking = true;
-            if (this.mode !== this.AT_HOME && this.mode !== this.EXIT_HOME) {
+            /* if (this.mode !== this.AT_HOME && this.mode !== this.EXIT_HOME) {
                 this.current = this.opposites[this.current];
-            }
+            } */
         }
     }
 

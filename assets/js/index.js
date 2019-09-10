@@ -55,7 +55,7 @@ let TIME_MODES = [
     },
     {
         mode: "chase",
-        interval: 20000
+        interval: 200000
     },
     {
         mode: "scatter",
@@ -63,7 +63,7 @@ let TIME_MODES = [
     },
     {
         mode: "chase",
-        interval: -1 // -1 = infinite
+        interval: -1
     }
 ];
 let changeModeTimer = 0;
@@ -287,9 +287,9 @@ function newGame() {
 
 function update()
 {
-    console.log(ghosts[3].mode);
-    console.log(ghosts[0].ghostDestination);
-    console.log(ghosts[0].current);
+    //console.log(ghosts[0].mode);
+    //console.log(ghosts[0].ghostDestination);
+    console.log(ghosts[3].current);
     console.log(ghosts[3].mode);
     player.setDirections(getDirection(map, layer1, player.sprite));
 
@@ -352,7 +352,7 @@ function update()
         sendExitOrder(ghosts[2]);
     }
 
-    if (changeModeTimer !== -1 && !isPaused && changeModeTimer < this.time.now) {
+    if (TIME_MODES[currentMode].interval !== -1 && !isPaused && changeModeTimer < this.time.now) {
         currentMode++;
         changeModeTimer = this.time.now + TIME_MODES[currentMode].interval;
         if (TIME_MODES[currentMode].mode === "chase") {
