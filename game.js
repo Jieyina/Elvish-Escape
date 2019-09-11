@@ -1,10 +1,11 @@
-var game = new Phaser.Game(608, 672, Phaser.AUTO, "game");
+var game = new Phaser.Game(448, 496, Phaser.AUTO, "game");
 
 var PacmanGame = function (game) {    
     this.map = null;
-    this.obstacles = null;
-    this.keycollected = 0;
-    this.numPills = 0;
+    this.layer = null;
+    
+    this.numkeys = 0;
+    this.TOTAL_keys = 0;
     this.score = 0;
     this.scoreText = null;
     
@@ -17,16 +18,16 @@ var PacmanGame = function (game) {
     this.isClydeOut = false;
     this.ghosts = [];
 
-    this.safetile = [21, 70, 45, 74, 20, 29, 30, 31, 22, 36, 75, 11, 12, 13, 22, 20, 61, 65];
-    this.gridsize = 32;
+    this.safetile = 14;
+    this.gridsize = 16;       
     this.threshold = 3;
     
-    /* this.SPECIAL_TILES = [
+    this.SPECIAL_TILES = [
         { x: 12, y: 11 },
         { x: 15, y: 11 },
         { x: 12, y: 23 },
         { x: 15, y: 23 }
-    ]; */
+    ];
     
     this.TIME_MODES = [
         {
@@ -90,36 +91,44 @@ PacmanGame.prototype = {
     },
 
     preload: function () {
+        //  We need this because the assets are on Amazon S3
+        //  Remove the next 2 lines if running locally
+        //this.load.baseURL = 'http://files.phaser.io.s3.amazonaws.com/codingtips/issue005/';
+        //this.load.crossOrigin = 'anonymous';
+
         this.load.image('dot', 'assets/dot.png');
         this.load.image("pill", "assets/pill16.png");
-        this.load.image('tiles', 'assets/tile2.png');
-        this.load.image('key', 'assets/key_01_yellow.png');
+        this.load.image('tiles', 'assets/pacman-tiles.png');
         this.load.spritesheet('pacman', 'assets/pacman.png', 32, 32);
         this.load.spritesheet("ghosts", "assets/ghosts32.png", 32, 32);
-        this.load.tilemap('map', 'assets/level1.json', null, Phaser.Tilemap.TILED_JSON);
+        this.load.tilemap('map', 'assets/map1.json', null, Phaser.Tilemap.TILED_JSON);
     },
 
     create: function () {
         this.map = this.add.tilemap('map');
         this.map.addTilesetImage('pacman-tiles', 'tiles');
 
-        this.obstacles = this.map.createLayer('obstacle');
+        this.layer = this.map.createLayer('Pacman');
+        this.objectLayer = this.map.createLayer('Object Layer');
 
+        // 创建key和pill,这里没问题
         this.keys = this.add.physicsGroup();
         this.keys.enableBody = true;
-        this.key1 = this.keys.create((4 * 32) + 16, (14 * 32) + 16, 'key');
-        this.key2 = this.keys.create((14 * 32) + 16, (14 * 32) + 16, 'key');
-        this.key3 = this.keys.create((4 * 32) + 16, (6 * 32) + 16, 'key');
-        this.key4 = this.keys.create((14 * 32) + 16, (6 * 32) + 16, 'key');
-        this.keycollected = 0;
+        this.mumkeys = this.map.createFromObjects('Object Layer', 10, 'dot', this.keys);
+        this.TOTAL_keys = this.numkeys;
 
         this.pills = this.add.physicsGroup();
         this.pills.enableBody = true;
-        this.pill1 = this.pills.create((4 * 32) + 16, (10 * 32) + 16, 'pill');
-        this.pill2 = this.pills.create((14 * 32) + 16, (10 * 32) + 16, 'pill');
-        this.pill3 = this.pills.create((9 * 32) + 16, (14 * 32) + 16, 'pill');
-        this.pill4 = this.pills.create((9 * 32) + 16, (6 * 32) + 16, 'pill');
-        this.numPills = 4;
+        this.numPills = this.map.createFromObjects('Object Layer', 11, 'pill', this.pills);
+
+        this.door = this.map.createFromObjects('Object Layer', 12, 'pill');
+
+        //  The keys will need to be offset by 6px to put them back in the middle of the grid
+        this.keys.setAll('x', 6, false, false, 1);
+        this.keys.setAll('y', 6, false, false, 1);
+
+        //  Pacman should collide with everything except the safe tile
+        this.map.setCollisionByExclusion([this.safetile], true, this.layer);
 
 		// Our hero
         this.pacman = new Pacman(this, "pacman");
@@ -133,13 +142,16 @@ PacmanGame.prototype = {
         this.cursors["d"] = this.input.keyboard.addKey(Phaser.Keyboard.D);
         this.cursors["b"] = this.input.keyboard.addKey(Phaser.Keyboard.B);
 
+        //this.game.time.events.add(1250, this.sendExitOrder, this);
+        //this.game.time.events.add(7000, this.sendAttackOrder, this);
+
         this.changeModeTimer = this.time.time + this.TIME_MODES[this.currentMode].time;
 
         // Ghosts
-        this.blinky = new Ghost(this, "ghosts", "blinky", {x:8, y:10}, Phaser.RIGHT);
-        this.pinky = new Ghost(this, "ghosts", "pinky", {x:8, y:10}, Phaser.LEFT);
-        this.inky = new Ghost(this, "ghosts", "inky", {x:9, y:10}, Phaser.RIGHT);
-        this.clyde = new Ghost(this, "ghosts", "clyde", {x:9, y:8}, Phaser.LEFT);
+        this.blinky = new Ghost(this, "ghosts", "blinky", {x:13, y:11}, Phaser.RIGHT);
+        this.pinky = new Ghost(this, "ghosts", "pinky", {x:15, y:14}, Phaser.LEFT);
+        this.inky = new Ghost(this, "ghosts", "inky", {x:14, y:14}, Phaser.RIGHT);
+        this.clyde = new Ghost(this, "ghosts", "clyde", {x:17, y:14}, Phaser.LEFT);
         this.ghosts.push(this.clyde, this.pinky, this.inky, this.blinky);
 
         this.sendExitOrder(this.pinky);
@@ -174,7 +186,7 @@ PacmanGame.prototype = {
     dogEatsDog: function(pacman, ghost) {
         if (this.isPaused) {
             this[ghost.name].mode = this[ghost.name].RETURNING_HOME;
-            this[ghost.name].ghostDestination = new Phaser.Point(9 * this.gridsize, 10 * this.gridsize);
+            this[ghost.name].ghostDestination = new Phaser.Point(14 * this.gridsize, 14 * this.gridsize);
             this[ghost.name].resetSafeTiles();
             this.score += 10;
         } else {
@@ -229,7 +241,7 @@ PacmanGame.prototype = {
                 }
             }
 
-            if (this.changeModeTimer !== -1 && !this.isPaused && this.changeModeTimer < this.time.time) {
+            if (this.TIME_MODES[this.currentMode].time !== -1 && !this.isPaused && this.changeModeTimer < this.time.time) {
                 this.currentMode++;
                 this.changeModeTimer = this.time.time + this.TIME_MODES[this.currentMode].time;
                 if (this.TIME_MODES[this.currentMode].mode === "chase") {

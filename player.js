@@ -82,7 +82,7 @@ Pacman.prototype.move = function(direction) {
 Pacman.prototype.update = function() {
     if (!this.isDead) {
         // 碰撞判定无法触发
-        this.game.physics.arcade.collide(this.sprite, this.game.obstacles);
+        this.game.physics.arcade.collide(this.sprite, this.game.layer);
         this.game.physics.arcade.overlap(this.sprite, this.game.keys, this.eatKey, null, this);
         this.game.physics.arcade.overlap(this.sprite, this.game.pills, this.eatPill, null, this);
 
@@ -154,7 +154,7 @@ Pacman.prototype.eatKey = function(pacman, key) {
     key.kill();
     
     this.game.score ++;
-    this.game.keycollected ++;
+    this.game.numkeys --;
 };
 
 Pacman.prototype.eatPill = function(pacman, pill) {
