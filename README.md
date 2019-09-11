@@ -1,7 +1,15 @@
-# Pac-Man-Meets-Dungeons
+# phaserPacmanClone
+A basic Pacman clone made with Phaser.
 
-## Steps to get the project set up
-1. Install XAMPP (for local server hosting)
-2. Download/Clone the repository into C://xampp/htdocs (Might be different for you if you installed XAMPP at another location)
-3. Run xampp_controlpanel and start Apache Server
-4. Open index.html in your browser
+Cursor keys to move Pacman.
+"D" key to (de)activate Debug mode
+"B" key to (de)activate original Overflow "bug"
+
+Demo:
+http://luisquin.com/lq/phaserPacman/index.html
+
+Following theory and mechanics from
+http://gameinternals.com/post/2072558330/understanding-pac-man-ghost-behavior
+
+Based on original work from
+http://phaser.io/tutorials/coding-tips-005
