@@ -106,7 +106,7 @@ Pacman.prototype.update = function() {
             this.turn();
         }
 
-        if (this.game.keys.total === 0 && this.marker.x === 17 && this.marker.y === 14)
+        if (this.game.keys.total === 0 && this.marker.x == 17 && this.marker.y == 14)
         {
             this.game.winGame();
         }
