@@ -82,6 +82,8 @@ var PacmanGame = function (game) {
     this.lastKeyPressed = 0;
     
     this.game = game;
+    this.sounds;
+    this.killCombo = 0;
 };
 
 PacmanGame.prototype = {
@@ -101,20 +103,14 @@ PacmanGame.prototype = {
         this.load.image('tiles', 'assets/tile32.png');
         this.load.image("lifecounter", "assets/heart32.png");
         this.load.image('key_yellow', 'assets/pickups/key_yellow.png');
-        this.load.image('key_red', 'assets/pickups/key_Red.png');
-        this.load.image('key_blue', 'assets/pickups/key_Blue.png');
-        this.load.image('key_green', 'assets/pickups/key_Green.png');
-        this.load.image('sword', 'assets/pickups/sword.png');
+        this.load.image('key_red', 'assets/pickups/key_red.png');
+        this.load.image('key_blue', 'assets/pickups/key_blue.png');
+        this.load.image('key_green', 'assets/pickups/key_green.png');
+        this.load.image('sword', 'assets/pickups/sword.png')
         this.load.tilemap('map', 'assets/level1.json', null, Phaser.Tilemap.TILED_JSON);
         this.load.spritesheet('hero', 'assets/hero/pax.png', 32, 32);
-        this.load.spritesheet('monster1', 'assets/monsters/zombie_orange_sheet.png', 32, 32);
-        this.load.spritesheet('monster2', 'assets/monsters/zombie_pink_sheet.png', 32, 32);
-        this.load.spritesheet('monster3', 'assets/monsters/zombie_blue_sheet.png', 32, 32);
-        this.load.spritesheet('monster4', 'assets/monsters/zombie_red_sheet.png', 32, 32);
-
-
+        this.load.spritesheet('monster', 'assets/monsters/zombie_sheet.png', 32, 32);
         this.sound.loadAllSounds();
-
     },
 
     create: function () {
@@ -168,10 +164,10 @@ PacmanGame.prototype = {
         
         // Ghosts
         // debugger;
-        this.blinky = new Ghost(this, "monster4", "blinky", {x:9, y:8}, Phaser.RIGHT);
-        this.pinky = new Ghost(this, "monster3", "pinky", {x:9, y:10}, Phaser.LEFT);
-        this.inky = new Ghost(this, "monster2", "inky", {x:8, y:10}, Phaser.LEFT);
-        this.clyde = new Ghost(this, "monster1", "clyde", {x:10, y:10}, Phaser.RIGHT);
+        this.blinky = new Ghost(this, "monster", "blinky", {x:9, y:8}, Phaser.RIGHT);
+        this.pinky = new Ghost(this, "monster", "pinky", {x:9, y:10}, Phaser.LEFT);
+        this.inky = new Ghost(this, "monster", "inky", {x:8, y:10}, Phaser.LEFT);
+        this.clyde = new Ghost(this, "monster", "clyde", {x:10, y:10}, Phaser.RIGHT);
         this.ghosts.push(this.clyde, this.pinky, this.inky, this.blinky);
         
         this.gimeMeExitOrder(this.pinky);
@@ -223,26 +219,36 @@ PacmanGame.prototype = {
             if (this.isPaused && this.changeModeTimer < this.time.time) {
                 this.changeModeTimer = this.time.time + this.remainingTime;
                 this.isPaused = false;
-                this.sound.playBgm();
                 this.pacman.sprite.play('munch');
                 if (this.TIME_MODES[this.currentMode].mode === "chase") {
                     this.sendAttackOrder();
                 } else {
                     this.sendScatterOrder();
                 }
+                this.sound.playBgm();
+                this.killCombo = 0;
                 console.log("new mode:", this.TIME_MODES[this.currentMode].mode, this.TIME_MODES[this.currentMode].time);
             }
         }
         
         this.pacman.update();
-        console.log("clyde" + " " + this.ghosts[0].mode);
-        console.log("pinky" + " " + this.ghosts[1].mode);
-        console.log("inky" + " " + this.ghosts[2].mode);
-        console.log("blinky" + " " + this.ghosts[3].mode);
+        // console.log("clyde" + " " + this.ghosts[0].mode);
+        // console.log("pinky" + " " + this.ghosts[1].mode);
+        // console.log("inky" + " " + this.ghosts[2].mode);
+        // console.log("blinky" + " " + this.ghosts[3].mode);
 		this.updateGhosts();
         
         this.checkKeys();
         this.checkMouse();
+        
+
+        if (this.score >= 6000) {
+            this.pacman.life++;
+            this.score -= 6000;
+            if (this.pacman.life > 3) {
+                this.pacman.life = 3;
+            }
+        }
 
         this.updateLife();
 
@@ -259,7 +265,6 @@ PacmanGame.prototype = {
         }
         this.changeModeTimer = this.time.time + this.FRIGHTENED_MODE_TIME;
         this.isPaused = true;
-        // console.log(this.remainingTime);
     },
     
     /* isSpecialTile: function(tile) {
@@ -323,10 +328,13 @@ PacmanGame.prototype = {
     },
 
     updateLife: function() {
-        for (var i = this.pacman.life; i < 3; i++) {
+        for (var i = 2; i > /*this.pacman.life - 1 */0; i--) {
             var image = this.livesImage[i];
             if (image) {
-                image.alpha = 0;
+                if (i > this.pacman.life - 1)
+                    image.alpha = 0;
+                else
+                    image.alpha = 1;
             }
         }
     },
@@ -364,14 +372,33 @@ PacmanGame.prototype = {
     },
 
     dogEatsDog: function(pacman, ghost) {
-        if (this[ghost.name].mode === this[ghost.name].RANDOM) {
-            this.sound.playKillEnemy();
-            this[ghost.name].mode = this[ghost.name].RETURNING_HOME;
-            this[ghost.name].ghostDestination = new Phaser.Point(14 * this.gridsize, 14 * this.gridsize);
-            this.score += 10;
-        } else {
-            this.killPacman();
-            this.lastDieTime = this.time.time;
+        if (Phaser.Math.distance(pacman.x, pacman.y, ghost.x, ghost.y) < 25) {
+            if (this[ghost.name].mode === this[ghost.name].RANDOM) {
+                this.sound.playKillEnemy();
+                this[ghost.name].mode = this[ghost.name].RETURNING_HOME;
+                this[ghost.name].ghostDestination = new Phaser.Point(14 * this.gridsize, 14 * this.gridsize);
+                switch(this.killCombo++) {
+                    case 0:
+                        this.score += 200;
+                        console.log("//////////////////////////////   200");
+                        break;
+                    case 1:
+                        this.score += 400;
+                        console.log("//////////////////////////////   400");
+                        break;
+                    case 2:
+                        this.score += 800;
+                        console.log("//////////////////////////////   800");
+                        break;
+                    case 3:
+                        this.score += 1600;
+                        console.log("//////////////////////////////   1600");
+                        break;
+                }
+            } else {
+                this.killPacman();
+                this.lastDieTime = this.time.time;
+            }
         }
     },
 
@@ -403,8 +430,8 @@ PacmanGame.prototype = {
         this.sound.playPlayerDeath();
         this.stopGhosts();
         // console.log("wait a sec");
-        this.game.time.events.add(1500, function() {
-            if(this.pacman.life < 0) {
+        this.game.time.events.add(1000, function() {
+            if(this.pacman.life <= 0) {
                 this.gameOver = true;
             }
             else {
@@ -421,8 +448,10 @@ PacmanGame.prototype = {
 
     winGame: function() {
         this.gameWin = true;
+        this.score += 500;
         this.stopGhosts();
         this.pacman.move(Phaser.NONE);
+        this.sound.playLevelComplete();
     },
 
     newGame: function() {
@@ -455,7 +484,6 @@ PacmanGame.prototype = {
         this.pacman.respawn();
         this.sound.playBgm();
     }
-
 };
 
 game.state.add('Game', PacmanGame, true);

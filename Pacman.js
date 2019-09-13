@@ -38,6 +38,7 @@ var Pacman = function(game, key) {
     
     this.sprite.play('munch');
     this.move(Phaser.LEFT);
+    this.hasWonGame = false;
 };
 
 Pacman.prototype.move = function(direction) {
@@ -108,7 +109,10 @@ Pacman.prototype.update = function() {
 
         if (this.game.keys.total === 0 && this.marker.x == 17 && this.marker.y == 14)
         {
-            this.game.winGame();
+            if (!this.hasWonGame) {
+                this.game.winGame();
+                this.hasWonGame = true;
+            }
         }
     } else {
         this.move(Phaser.NONE);
@@ -158,7 +162,7 @@ Pacman.prototype.checkKeys = function(cursors) {
 Pacman.prototype.eatDot = function(pacman, key) {
     key.kill();
     
-    this.game.score ++;
+    this.game.score += 100;
     this.game.numKeys --;
     this.game.sound.playPickupKey();
     if (this.game.numKeys > 0)
@@ -168,12 +172,13 @@ Pacman.prototype.eatDot = function(pacman, key) {
 Pacman.prototype.eatPill = function(pacman, pill) {
     pill.kill();
     
-    this.game.score ++;
+    // this.game.score += 100;
     this.game.numPills --;
 
     this.sprite.play('armed');
     this.game.sound.playBgmAttack();
     this.game.enterFrightenedMode();
+    this.killCombo = 0;
 };
 
 Pacman.prototype.turn = function () {

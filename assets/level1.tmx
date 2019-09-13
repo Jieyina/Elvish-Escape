@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.2" tiledversion="1.2.4" orientation="orthogonal" renderorder="right-down" width="19" height="21" tilewidth="32" tileheight="32" infinite="0" nextlayerid="4" nextobjectid="1">
  <tileset firstgid="1" name="tile32" tilewidth="32" tileheight="32" tilecount="81" columns="9">
-  <image source="../../../../Users/u1274842/Documents/GitHub/Pac-Man-Meets-Dungeons/assets/tile32.png" width="288" height="288"/>
+  <image source="tile32.png" width="288" height="288"/>
  </tileset>
  <layer id="1" name="ground" width="19" height="21" visible="0">
   <data encoding="csv">
@@ -74,7 +74,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,42,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,80,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,80,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
