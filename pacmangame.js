@@ -69,7 +69,6 @@ var PacmanGame = function (game) {
     ];
     this.changeModeTimer = 0;
     this.remainingTime = 0;
-    this.dieTimer = 0;
     this.currentMode = 0;
     this.isPaused = false;
     this.FRIGHTENED_MODE_TIME = 7000;
@@ -78,7 +77,6 @@ var PacmanGame = function (game) {
     this.DEBUG_ON = false;
     
     this.KEY_COOLING_DOWN_TIME = 250;
-    this.dieTimer = 0;
     this.lastKeyPressed = 0;
     
     this.game = game;
@@ -195,7 +193,7 @@ PacmanGame.prototype = {
         if (!this.pacman.isDead) {
             for (var i=0; i<this.ghosts.length; i++) {
                 if (this.ghosts[i].mode !== this.ghosts[i].RETURNING_HOME) {
-                    this.physics.arcade.overlap(this.pacman.sprite, this.ghosts[i].ghost, this.dogEatsDog, this.checkDieTime, this);
+                    this.physics.arcade.overlap(this.pacman.sprite, this.ghosts[i].ghost, this.dogEatsDog, null, this);
                 }
             }
 
@@ -209,7 +207,6 @@ PacmanGame.prototype = {
                 this.sendExitOrder(this.clyde);
             }
 
-            console.log("paused " + this.isPaused);
             if (this.TIME_MODES[this.currentMode].time !== -1 && !this.isPaused && this.changeModeTimer < this.time.time) {
                 this.currentMode++;
                 this.changeModeTimer = this.time.time + this.TIME_MODES[this.currentMode].time;
@@ -234,14 +231,13 @@ PacmanGame.prototype = {
                 console.log("new mode:", this.TIME_MODES[this.currentMode].mode, this.TIME_MODES[this.currentMode].time);
             }
         }
-        
+
         this.pacman.update();
-        // console.log("clyde" + " " + this.ghosts[0].mode);
-        // console.log("pinky" + " " + this.ghosts[1].mode);
-        // console.log("inky" + " " + this.ghosts[2].mode);
-        // console.log("blinky" + " " + this.ghosts[3].mode);
+        this.updateLife();
 		this.updateGhosts();
-        
+        for (var i=0; i< this.ghosts.length; i++)
+            console.log(this.ghosts[i].name, this.ghosts[i].currentDir, this.ghosts[i].mode);
+
         this.checkKeys();
         this.checkMouse();
         
@@ -253,8 +249,6 @@ PacmanGame.prototype = {
                 this.pacman.life = 3;
             }
         }
-
-        this.updateLife();
 
         if ((this.gameOver == true || this.gameWin == true) && this.cursors.r.isDown)
             this.newGame();
@@ -306,6 +300,8 @@ PacmanGame.prototype = {
                     var y = this.game.math.snapToFloor(Math.floor(this.ghosts[i].ghostDestination.y), this.gridsize);
                     this.game.debug.geom(new Phaser.Rectangle(x, y, 16, 16), color);
                 }
+                this.game.debug.body(this.ghosts[i].ghost);
+                this.game.debug.body(this.pacman.sprite);
             }
             if (this.debugPosition) {
                 this.game.debug.geom(new Phaser.Rectangle(this.debugPosition.x, this.debugPosition.y, 16, 16), "#00ff00");
@@ -313,6 +309,7 @@ PacmanGame.prototype = {
         } else {
             this.game.debug.reset();
         }
+
     },
     
     sendAttackOrder: function() {
@@ -322,7 +319,8 @@ PacmanGame.prototype = {
     },
     
     sendExitOrder: function(ghost) {
-        ghost.mode = this.clyde.EXIT_HOME;
+        if (ghost.mode === ghost.AT_HOME)
+            ghost.mode = ghost.EXIT_HOME;
     },
     
     sendScatterOrder: function() {
@@ -332,13 +330,10 @@ PacmanGame.prototype = {
     },
 
     updateLife: function() {
-        for (var i = 2; i > /*this.pacman.life - 1 */0; i--) {
+        for (var i = this.pacman.life; i < 3; i++) {
             var image = this.livesImage[i];
             if (image) {
-                if (i > this.pacman.life - 1)
-                    image.alpha = 0;
-                else
-                    image.alpha = 1;
+                image.alpha = 0;
             }
         }
     },
@@ -371,7 +366,6 @@ PacmanGame.prototype = {
             var x = this.game.math.snapToFloor(Math.floor(this.input.x), this.gridsize) / this.gridsize;
             var y = this.game.math.snapToFloor(Math.floor(this.input.y), this.gridsize) / this.gridsize;
             this.debugPosition = new Phaser.Point(x * this.gridsize, y * this.gridsize);
-            console.log(x, y);
         }
     },
 
@@ -384,19 +378,15 @@ PacmanGame.prototype = {
                 switch(this.killCombo++) {
                     case 0:
                         this.score += 200;
-                        console.log("//////////////////////////////   200");
                         break;
                     case 1:
                         this.score += 400;
-                        console.log("//////////////////////////////   400");
                         break;
                     case 2:
                         this.score += 800;
-                        console.log("//////////////////////////////   800");
                         break;
                     case 3:
                         this.score += 1600;
-                        console.log("//////////////////////////////   1600");
                         break;
                 }
             } else {
@@ -429,7 +419,6 @@ PacmanGame.prototype = {
         this.pacman.life --;
         this.sound.playPlayerDeath();
         this.stopGhosts();
-        // console.log("wait a sec");
         this.game.time.events.add(1000, function() {
             if(this.pacman.life <= 0) {
                 this.gameOver = true;

@@ -19,15 +19,15 @@ var Ghost = function(game, key, name, startPos, startDir) {
     this.AT_HOME    = "at_home";
     this.EXIT_HOME  = "leaving_home";
     this.RETURNING_HOME = "returning_home";
-    this.isAttacking = false;
     this.lastDirection = null;
     
     this.mode = this.AT_HOME;
+    this.ghostDestination = new Phaser.Point();
     this.scatterDestination = new Phaser.Point(18 * this.gridsize, 20 * this.gridsize);
     this.returnDestination = new Phaser.Point(9 * this.gridsize, 10 * this.gridsize);
     
     this.ghostSpeed = 150;
-    this.ghostScatterSpeed = 135;
+    this.ghostScatterSpeed = 130;
     this.ghostFrightenedSpeed = 75;
     this.cruiseElroySpeed = 170;
     this.directions = [ null, null, null, null, null ];
@@ -36,7 +36,6 @@ var Ghost = function(game, key, name, startPos, startDir) {
     this.currentDir = startDir;
     
     this.turnPoint = new Phaser.Point();
-    this.lastPosition = { x: -1, y: -1 };
     
     var offsetGhost = 0;
     switch (this.name) {
@@ -79,7 +78,7 @@ var Ghost = function(game, key, name, startPos, startDir) {
     //this.ghost.play(startDir);
     
     this.game.physics.arcade.enable(this.ghost);
-    this.ghost.body.setSize(32, 32, 0, 0);
+    this.ghost.body.setSize(26, 26, 2, 0);
     
     this.move(startDir);
 };
@@ -91,6 +90,8 @@ Ghost.prototype = {
         
         var x = this.game.math.snapToFloor(Math.floor(this.ghost.x), this.gridsize) / this.gridsize;
         var y = this.game.math.snapToFloor(Math.floor(this.ghost.y), this.gridsize) / this.gridsize;
+        this.turnPoint.x = (x * this.gridsize) + (this.gridsize / 2);
+        this.turnPoint.y = (y * this.gridsize) + (this.gridsize / 2);
 
         if (this.ghost.x < 0) {
             this.ghost.x = this.game.map.widthInPixels - 2;
@@ -99,23 +100,14 @@ Ghost.prototype = {
             this.ghost.x = 1;
         }
         
-        if (this.isAttacking && (this.mode === this.SCATTER || this.mode === this.CHASE)) {
-            // console.log(this.name + " start attack");
-            this.ghostDestination = this.getGhostDestination();
-            this.mode = this.CHASE;
-        }
-        
         if (this.game.math.fuzzyEqual((x * this.gridsize) + (this.gridsize /2), this.ghost.x, this.threshold) &&
            this.game.math.fuzzyEqual((y * this.gridsize) + (this.gridsize /2), this.ghost.y, this.threshold)) {
-            //  Update our grid sensors
-            // console.log(this.name + " facing " + this.currentDir);
-            // console.log(this.name + " is " + this.mode);
             this.directions[0] = this.game.map.getTile(x, y, this.game.layer);
             this.directions[1] = this.game.map.getTileLeft(this.game.layer.index, x, y) || this.directions[1];
             this.directions[2] = this.game.map.getTileRight(this.game.layer.index, x, y) || this.directions[2];
             this.directions[3] = this.game.map.getTileAbove(this.game.layer.index, x, y) || this.directions[3];
             this.directions[4] = this.game.map.getTileBelow(this.game.layer.index, x, y) || this.directions[4];
-            // console.log(this.directions[this.currentDir]);
+            // console.log(this.name + " " + x + " " + this.currentDir);
 
             var canContinue = this.checkSafetile(this.directions[this.currentDir].index);
             var possibleExits = [];
@@ -124,21 +116,17 @@ Ghost.prototype = {
                     possibleExits.push(q);
                 }
             }
-            // console.log(possibleExits);
+            console.log(this.name, possibleExits);
             switch (this.mode) {
                 case this.RANDOM:
                     if (this.turnTimer < this.game.time.time && (possibleExits.length > 1 || !canContinue)) {
                         var select = Math.floor(Math.random() * possibleExits.length);
                         var newDirection = possibleExits[select];
 
-                        this.turnPoint.x = (x * this.gridsize) + (this.gridsize / 2);
-                        this.turnPoint.y = (y * this.gridsize) + (this.gridsize / 2);
-
                         // snap to grid exact position before turning
                         this.ghost.x = this.turnPoint.x;
                         this.ghost.y = this.turnPoint.y;
 
-                        this.lastPosition = { x: x, y: y };
                         this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
                         this.lastDirection = this.currentDir;
                         this.move(newDirection);
@@ -148,6 +136,7 @@ Ghost.prototype = {
                     break;
                     
                 case this.RETURNING_HOME:
+                    this.ghostDestination = this.returnDestination;
                     if (this.turnTimer < this.game.time.time) {
                         var distanceToObj = 999999;
                         var direction, decision, bestDecision;
@@ -173,7 +162,7 @@ Ghost.prototype = {
                                 default:
                                     break;
                             }
-                            var dist = this.returnDestination.distance(decision);
+                            var dist = this.ghostDestination.distance(decision);
                             if (dist < distanceToObj) {
                                 bestDecision = direction;
                                 distanceToObj = dist;
@@ -184,14 +173,9 @@ Ghost.prototype = {
                             bestDecision = this.currentDir;
                         } */
 
-                        this.turnPoint.x = (x * this.gridsize) + (this.gridsize / 2);
-                        this.turnPoint.y = (y * this.gridsize) + (this.gridsize / 2);
-
                         // snap to grid exact position before turning
                         this.ghost.x = this.turnPoint.x;
                         this.ghost.y = this.turnPoint.y;
-
-                        this.lastPosition = { x: x, y: y };
 
                         this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
                         this.lastDirection = this.currentDir;
@@ -200,8 +184,6 @@ Ghost.prototype = {
                         this.turnTimer = this.game.time.time + this.TURNING_COOLDOWN;
                     }
                     if (this.hasReachedHome()) {
-                        this.turnPoint.x = (x * this.gridsize) + (this.gridsize / 2);
-                        this.turnPoint.y = (y * this.gridsize) + (this.gridsize / 2);
                         this.ghost.x = this.turnPoint.x;
                         this.ghost.y = this.turnPoint.y;
                         this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
@@ -211,6 +193,7 @@ Ghost.prototype = {
                     break;
                     
                 case this.CHASE:
+                    this.ghostDestination = this.getGhostDestination();
                     if (this.turnTimer < this.game.time.time) {
                         var distanceToObj = 999999;
                         var direction, decision, bestDecision;
@@ -247,15 +230,10 @@ Ghost.prototype = {
                             bestDecision = this.currentDir;
                         } */
 
-                        this.turnPoint.x = (x * this.gridsize) + (this.gridsize / 2);
-                        this.turnPoint.y = (y * this.gridsize) + (this.gridsize / 2);
-
                         // snap to grid exact position before turning
                         this.ghost.x = this.turnPoint.x;
                         this.ghost.y = this.turnPoint.y;
 
-                        this.lastPosition = { x: x, y: y };
-                        
                         this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
                         this.lastDirection = this.currentDir;
                         this.move(bestDecision);
@@ -266,32 +244,24 @@ Ghost.prototype = {
                     
                 case this.AT_HOME:
                     if (x === 8 && this.currentDir !== Phaser.RIGHT) {
-                        this.turnPoint.x = (x * this.gridsize) + (this.gridsize / 2);
-                        this.turnPoint.y = (y * this.gridsize) + (this.gridsize / 2);
                         this.ghost.x = this.turnPoint.x;
                         this.ghost.y = this.turnPoint.y;
                         this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
                         this.lastDirection = this.currentDir;
                         this.move(Phaser.RIGHT);
                     } else if (x === 10 && this.currentDir !== Phaser.LEFT) {
-                        this.turnPoint.x = (x * this.gridsize) + (this.gridsize / 2);
-                        this.turnPoint.y = (y * this.gridsize) + (this.gridsize / 2);
                         this.ghost.x = this.turnPoint.x;
                         this.ghost.y = this.turnPoint.y;
                         this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
                         this.lastDirection = this.currentDir;
                         this.move(Phaser.LEFT);
                     } else if (x === 9 && this.currentDir === Phaser.DOWN) {
-                        this.turnPoint.x = (x * this.gridsize) + (this.gridsize / 2);
-                        this.turnPoint.y = (y * this.gridsize) + (this.gridsize / 2);
                         this.ghost.x = this.turnPoint.x;
                         this.ghost.y = this.turnPoint.y;
                         this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
                         this.lastDirection = this.currentDir;
                         this.move(Phaser.DOWN);
                     } else if (x === 9 && this.currentDir === Phaser.UP) {
-                        this.turnPoint.x = (x * this.gridsize) + (this.gridsize / 2);
-                        this.turnPoint.y = (y * this.gridsize) + (this.gridsize / 2);
                         this.ghost.x = this.turnPoint.x;
                         this.ghost.y = this.turnPoint.y;
                         this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
@@ -305,32 +275,24 @@ Ghost.prototype = {
                     
                 case this.EXIT_HOME:
                     if (x === 8 && this.currentDir !== Phaser.LEFT) {
-                        this.turnPoint.x = (x * this.gridsize) + (this.gridsize / 2);
-                        this.turnPoint.y = (y * this.gridsize) + (this.gridsize / 2);
                         this.ghost.x = this.turnPoint.x;
                         this.ghost.y = this.turnPoint.y;
                         this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
                         this.lastDirection = this.currentDir;
                         this.move(Phaser.LEFT);
                     } else if (x === 10 && this.currentDir !== Phaser.RIGHT) {
-                        this.turnPoint.x = (x * this.gridsize) + (this.gridsize / 2);
-                        this.turnPoint.y = (y * this.gridsize) + (this.gridsize / 2);
                         this.ghost.x = this.turnPoint.x;
                         this.ghost.y = this.turnPoint.y;
                         this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
                         this.lastDirection = this.currentDir;
                         this.move(Phaser.RIGHT);
                     } else if (x === 9 && this.currentDir !== Phaser.UP) {
-                        this.turnPoint.x = (x * this.gridsize) + (this.gridsize / 2);
-                        this.turnPoint.y = (y * this.gridsize) + (this.gridsize / 2);
                         this.ghost.x = this.turnPoint.x;
                         this.ghost.y = this.turnPoint.y;
                         this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
                         this.lastDirection = this.currentDir;
                         this.move(Phaser.UP);
-                    } else if (x === 6 && y === 10 || x === 12 && y === 10 || x === 9 && y === 8 || x === 9 && y === 12) {
-                        this.turnPoint.x = (x * this.gridsize) + (this.gridsize / 2);
-                        this.turnPoint.y = (y * this.gridsize) + (this.gridsize / 2);
+                    } else if (x === 6 && y === 10 || x === 12 && y === 10 || x === 9 && y === 8) {
                         this.ghost.x = this.turnPoint.x;
                         this.ghost.y = this.turnPoint.y;
                         this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
@@ -340,9 +302,53 @@ Ghost.prototype = {
                     break;
                     
                 case this.SCATTER:
-                    // console.log(this.name + " start scatter");
-                    this.ghostDestination = new Phaser.Point(this.scatterDestination.x, this.scatterDestination.y);
-                    this.mode = this.CHASE;
+                    this.ghostDestination = this.scatterDestination;
+                    if (this.turnTimer < this.game.time.time) {
+                        var distanceToObj = 999999;
+                        var direction, decision, bestDecision;
+                        for (q=0; q<possibleExits.length; q++) {
+                            direction = possibleExits[q];
+                            switch (direction) {
+                                case Phaser.LEFT:
+                                    decision = new Phaser.Point((x-1)*this.gridsize + (this.gridsize/2),
+                                        (y * this.gridsize) + (this.gridsize / 2));
+                                    break;
+                                case Phaser.RIGHT:
+                                    decision = new Phaser.Point((x+1)*this.gridsize + (this.gridsize/2),
+                                        (y * this.gridsize) + (this.gridsize / 2));
+                                    break;
+                                case Phaser.UP:
+                                    decision = new Phaser.Point(x * this.gridsize + (this.gridsize/2),
+                                        ((y-1)*this.gridsize) + (this.gridsize / 2));
+                                    break;
+                                case Phaser.DOWN:
+                                    decision = new Phaser.Point(x * this.gridsize + (this.gridsize/2),
+                                        ((y+1)*this.gridsize) + (this.gridsize / 2));
+                                    break;
+                                default:
+                                    break;
+                            }
+                            var dist = this.ghostDestination.distance(decision);
+                            if (dist < distanceToObj) {
+                                bestDecision = direction;
+                                distanceToObj = dist;
+                            }
+                        }
+
+                        /* if (this.game.isSpecialTile({x: x, y: y}) && bestDecision === Phaser.UP) {
+                            bestDecision = this.currentDir;
+                        } */
+
+                        // snap to grid exact position before turning
+                        this.ghost.x = this.turnPoint.x;
+                        this.ghost.y = this.turnPoint.y;
+
+                        this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
+                        this.lastDirection = this.currentDir;
+                        this.move(bestDecision);
+
+                        this.turnTimer = this.game.time.time + this.TURNING_COOLDOWN;
+                    }
                     break;
                     
                 case this.STOP:
@@ -354,8 +360,7 @@ Ghost.prototype = {
     },
     
     attack: function() {
-        if (!this.game.pacman.isDead && this.mode !== this.RETURNING_HOME) {
-            this.isAttacking = true;
+        if (!this.game.pacman.isDead && !this.game.gameWin && this.mode !== this.RETURNING_HOME) {
             //this.ghost.animations.play(this.currentDir);
             if (this.mode !== this.AT_HOME && this.mode !== this.EXIT_HOME) {
                 this.mode = this.CHASE;
@@ -376,7 +381,6 @@ Ghost.prototype = {
         if (this.mode !== this.AT_HOME && this.mode !== this.EXIT_HOME && this.mode !== this.RETURNING_HOME) {
             //this.ghost.play("frightened");
             this.mode = this.RANDOM;
-            this.isAttacking = false;
         }
     },
     
@@ -448,7 +452,9 @@ Ghost.prototype = {
         this.currentDir = dir;
         
         var speed;
-        if (this.mode === this.RANDOM) {
+        if (this.mode === this.SCATTER) {
+            speed = this.ghostScatterSpeed;
+        } else if (this.mode === this.RANDOM) {
             speed = this.ghostFrightenedSpeed;
         } else if (this.mode === this.RETURNING_HOME) {
             speed = this.cruiseElroySpeed;
@@ -470,7 +476,6 @@ Ghost.prototype = {
         if (dir === Phaser.LEFT || dir === Phaser.UP) speed = -speed;
         if (dir === Phaser.LEFT && !this.game.isPaused) {
             this.ghost.animations.play("left");
-            // console.log(this.name + "animation left");
         } else if (dir === Phaser.RIGHT && !this.game.isPaused) {
             this.ghost.animations.play("right");
         } else if (dir === Phaser.UP && !this.game.isPaused && this.lastDirection === Phaser.LEFT) {
@@ -482,7 +487,6 @@ Ghost.prototype = {
         } else if (dir === Phaser.DOWN && !this.game.isPaused && this.lastDirection === Phaser.RIGHT) {
             this.ghost.animations.play("right");
         } else if (dir === Phaser.LEFT && this.mode === this.RANDOM) {
-            // console.log(this.name + "frightened left");
             this.ghost.animations.play("frightened left");
         } else if (dir === Phaser.RIGHT && this.mode === this.RANDOM) {
             this.ghost.animations.play("frightened right");
@@ -503,9 +507,8 @@ Ghost.prototype = {
     },
     
     scatter: function() {
-        if (!this.game.pacman.isDead && this.mode !== this.RETURNING_HOME) {
+        if (!this.game.pacman.isDead && !this.game.gameWin && this.mode !== this.RETURNING_HOME) {
             // this.ghost.animations.play(this.currentDir);
-            this.isAttacking = false;
             if (this.mode !== this.AT_HOME && this.mode !== this.EXIT_HOME) {
                 this.mode = this.SCATTER;
             }
@@ -513,7 +516,6 @@ Ghost.prototype = {
     },
 
     respawn: function() {
-        this.isAttacking = false;
         this.ghost.x = this.startPos.x * this.gridsize + this.gridsize/2;
         this.ghost.y = this.startPos.y * this.gridsize + this.gridsize/2;
         this.ghost.body.reset(this.startPos.x * this.gridsize + this.gridsize/2, this.startPos.y * this.gridsize + this.gridsize/2);
@@ -526,7 +528,6 @@ Ghost.prototype = {
     },
 
     restart: function() {
-        this.isAttacking = false;
         this.ghost.x = this.startPos.x * this.gridsize + this.gridsize/2;
         this.ghost.y = this.startPos.y * this.gridsize + this.gridsize/2;
         this.ghost.body.reset(this.startPos.x * this.gridsize + this.gridsize/2, this.startPos.y * this.gridsize + this.gridsize/2);

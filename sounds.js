@@ -20,7 +20,7 @@ Sounds.prototype.loadAllSounds = function() {
     this.game.load.audio('player-pickup-key', 'assets/audio/player-pickup-key.wav');
     this.game.load.audio('player-slash', 'assets/audio/player-slash.wav');
     this.game.load.audio('bgm-level-complete', 'assets/audio/bgm-level-complete.wav');
-}
+};
 
 Sounds.prototype.createAllInstances = function() {
     this.bgm = this.game.add.audio('bgm', 1, true);
@@ -33,10 +33,10 @@ Sounds.prototype.createAllInstances = function() {
     this.player_pickup_key = this.game.add.audio('player-pickup-key', 1, false);
     this.level_complete = this.game.add.audio('bgm-level-complete', 1, false);
     
-}
+};
 
 Sounds.prototype.playBgm = function() {
-    // this.bgm.play();         // Debugging
+    this.bgm.play();         // Debugging
     this.bgm_attack.stop();
 };
 
@@ -48,18 +48,18 @@ Sounds.prototype.playBgmAttack = function() {
 Sounds.prototype.playKillEnemy = function() {
     this.player_slash.play();
     this.enemy_death.play();
-}
+};
 
 Sounds.prototype.playPlayerDeath = function() {
     this.player_death.play();
-}
+};
 
 Sounds.prototype.playPickupKey = function() {
     this.player_pickup_key.play();
-}
+};
 
 Sounds.prototype.playLevelComplete = function() {
     this.level_complete.play();
     this.bgm.stop();
     this.bgm_attack.stop();
-}
+};

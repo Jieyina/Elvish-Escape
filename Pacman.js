@@ -14,6 +14,8 @@ var Pacman = function(game, key) {
     this.marker = new Phaser.Point();
     this.turnPoint = new Phaser.Point();
     this.threshold = 6;
+    this.offsetX = 2;
+    this.offsetY = 0;
 
     this.directions = [ null, null, null, null, null ];
     this.opposites = [ Phaser.NONE, Phaser.RIGHT, Phaser.LEFT, Phaser.DOWN, Phaser.UP ];
@@ -34,11 +36,10 @@ var Pacman = function(game, key) {
     // this.sprite.animations.add("death", [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], 10, false);
     
     this.game.physics.arcade.enable(this.sprite);
-    this.sprite.body.setSize(32, 32, 0, 0);
+    this.sprite.body.setSize(26, 26, this.offsetX, this.offsetY);
     
     this.sprite.play('munch');
     this.move(Phaser.LEFT);
-    this.hasWonGame = false;
 };
 
 Pacman.prototype.move = function(direction) {
@@ -71,7 +72,7 @@ Pacman.prototype.move = function(direction) {
     {
         this.sprite.scale.x = -1;
     }
-    else if ((direction === Phaser.UP || direction === Phaser.DOWN) && this.lastMove == Phaser. LEFT)
+    else if ((direction === Phaser.UP || direction === Phaser.DOWN) && this.lastMove === Phaser. LEFT)
     {
         this.sprite.scale.x = -1;
     }
@@ -109,10 +110,7 @@ Pacman.prototype.update = function() {
 
         if (this.game.keys.total === 0 && this.marker.x == 17 && this.marker.y == 14)
         {
-            if (!this.hasWonGame) {
-                this.game.winGame();
-                this.hasWonGame = true;
-            }
+            this.game.winGame();
         }
     } else {
         this.move(Phaser.NONE);
