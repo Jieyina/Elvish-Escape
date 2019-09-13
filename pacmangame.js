@@ -103,10 +103,10 @@ PacmanGame.prototype = {
         this.load.image('tiles', 'assets/tile32.png');
         this.load.image("lifecounter", "assets/heart32.png");
         this.load.image('key_yellow', 'assets/pickups/key_yellow.png');
-        this.load.image('key_red', 'assets/pickups/key_red.png');
-        this.load.image('key_blue', 'assets/pickups/key_blue.png');
-        this.load.image('key_green', 'assets/pickups/key_green.png');
-        this.load.image('sword', 'assets/pickups/sword.png')
+        this.load.image('key_red', 'assets/pickups/key_Red.png');
+        this.load.image('key_blue', 'assets/pickups/key_Blue.png');
+        this.load.image('key_green', 'assets/pickups/key_Green.png');
+        this.load.image('sword', 'assets/pickups/sword.png');
         this.load.tilemap('map', 'assets/level1.json', null, Phaser.Tilemap.TILED_JSON);
         this.load.spritesheet('hero', 'assets/hero/pax.png', 32, 32);
         this.load.spritesheet('monster', 'assets/monsters/zombie_sheet.png', 32, 32);
