@@ -112,7 +112,7 @@ PacmanGame.prototype = {
         this.load.spritesheet('monster1', 'assets/monsters/zombie_red_sheet.png', 32, 32);
         this.load.spritesheet('monster2', 'assets/monsters/zombie_pink_sheet.png', 32, 32);
         this.load.spritesheet('monster3', 'assets/monsters/zombie_blue_sheet.png', 32, 32);
-        this.load.spritesheet('monster4', 'assets/monsters/zombie_clyde_sheet.png', 32, 32);
+        this.load.spritesheet('monster4', 'assets/monsters/zombie_orange_sheet.png', 32, 32);
         this.sound.loadAllSounds();
     },
 
