@@ -109,7 +109,10 @@ PacmanGame.prototype = {
         this.load.image('sword', 'assets/pickups/sword.png');
         this.load.tilemap('map', 'assets/level1.json', null, Phaser.Tilemap.TILED_JSON);
         this.load.spritesheet('hero', 'assets/hero/pax.png', 32, 32);
-        this.load.spritesheet('monster', 'assets/monsters/zombie_sheet.png', 32, 32);
+        this.load.spritesheet('monster1', 'assets/monsters/zombie_red_sheet.png', 32, 32);
+        this.load.spritesheet('monster2', 'assets/monsters/zombie_pink_sheet.png', 32, 32);
+        this.load.spritesheet('monster3', 'assets/monsters/zombie_blue_sheet.png', 32, 32);
+        this.load.spritesheet('monster4', 'assets/monsters/zombie_clyde_sheet.png', 32, 32);
         this.sound.loadAllSounds();
     },
 
@@ -164,10 +167,10 @@ PacmanGame.prototype = {
         
         // Ghosts
         // debugger;
-        this.blinky = new Ghost(this, "monster", "blinky", {x:9, y:8}, Phaser.RIGHT);
-        this.pinky = new Ghost(this, "monster", "pinky", {x:9, y:10}, Phaser.LEFT);
-        this.inky = new Ghost(this, "monster", "inky", {x:8, y:10}, Phaser.LEFT);
-        this.clyde = new Ghost(this, "monster", "clyde", {x:10, y:10}, Phaser.RIGHT);
+        this.blinky = new Ghost(this, "monster1", "blinky", {x:9, y:8}, Phaser.RIGHT);
+        this.pinky = new Ghost(this, "monster2", "pinky", {x:9, y:10}, Phaser.LEFT);
+        this.inky = new Ghost(this, "monster3", "inky", {x:8, y:10}, Phaser.LEFT);
+        this.clyde = new Ghost(this, "monster4", "clyde", {x:10, y:10}, Phaser.RIGHT);
         this.ghosts.push(this.clyde, this.pinky, this.inky, this.blinky);
         
         this.gimeMeExitOrder(this.pinky);
@@ -176,12 +179,12 @@ PacmanGame.prototype = {
 
     update: function () {
         this.scoreText.text = "Score: " + this.score;
-        if (this.gameWin == true) {
+        if (this.gameWin === true) {
             this.winText.text = "You Win!";
         } else {
             this.winText.text = "";
         }
-        if (this.gameOver == true) {
+        if (this.gameOver === true) {
             this.loseText.text = "You Lose!";
             this.loseHint.text = "Press Enter to restart.";
         } else {
@@ -252,7 +255,7 @@ PacmanGame.prototype = {
 
         this.updateLife();
 
-        if ((this.gameOver == true || this.gameWin == true) && this.cursors.r.isDown)
+        if ((this.gameOver === true || this.gameWin === true) && this.cursors.r.isDown)
             this.newGame();
     },
     
@@ -328,7 +331,7 @@ PacmanGame.prototype = {
     },
 
     updateLife: function() {
-        for (var i = 2; i > /*this.pacman.life - 1 */0; i--) {
+        for (var i = 2; i > 0; i--) {
             var image = this.livesImage[i];
             if (image) {
                 if (i > this.pacman.life - 1)
@@ -356,7 +359,7 @@ PacmanGame.prototype = {
 
         if (this.lastKeyPressed < this.time.time) {
             if (this.cursors.d.isDown) {
-                this.DEBUG_ON = (this.DEBUG_ON) ? false : true;
+                this.DEBUG_ON = (!this.DEBUG_ON);
                 this.lastKeyPressed = this.time.time + this.KEY_COOLING_DOWN_TIME;
             }
         }
@@ -403,9 +406,7 @@ PacmanGame.prototype = {
     },
 
     checkDieTime: function() {
-        if (this.lastDieTime + 2000 > this.time.time)
-            return false;
-        else return true;
+        return this.lastDieTime + 2000 <= this.time.time;
     },
 
     getCurrentMode: function() {
