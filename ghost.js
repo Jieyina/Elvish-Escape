@@ -358,7 +358,7 @@ Ghost.prototype = {
             this.isAttacking = true;
             //this.ghost.animations.play(this.currentDir);
             if (this.mode !== this.AT_HOME && this.mode !== this.EXIT_HOME) {
-                this.currentDir = this.opposites[this.currentDir];
+                this.mode = this.CHASE;
             }
         }
     },

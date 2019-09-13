@@ -208,7 +208,8 @@ PacmanGame.prototype = {
                 this.isClydeOut = true;
                 this.sendExitOrder(this.clyde);
             }
-            
+
+            console.log("paused " + this.isPaused);
             if (this.TIME_MODES[this.currentMode].time !== -1 && !this.isPaused && this.changeModeTimer < this.time.time) {
                 this.currentMode++;
                 this.changeModeTimer = this.time.time + this.TIME_MODES[this.currentMode].time;
@@ -412,14 +413,10 @@ PacmanGame.prototype = {
     },
 
     getCurrentMode: function() {
-        if (!this.isPaused) {
-            if (this.TIME_MODES[this.currentMode].mode === "scatter") {
-                return "scatter";
-            } else {
-                return "chase";
-            }
+        if (this.TIME_MODES[this.currentMode].mode === "scatter") {
+            return "scatter";
         } else {
-            return "random";
+            return "chase";
         }
     },
 
