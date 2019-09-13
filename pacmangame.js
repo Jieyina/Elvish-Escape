@@ -179,12 +179,12 @@ PacmanGame.prototype = {
 
     update: function () {
         this.scoreText.text = "Score: " + this.score;
-        if (this.gameWin === true) {
+        if (this.gameWin == true) {
             this.winText.text = "You Win!";
         } else {
             this.winText.text = "";
         }
-        if (this.gameOver === true) {
+        if (this.gameOver == true) {
             this.loseText.text = "You Lose!";
             this.loseHint.text = "Press Enter to restart.";
         } else {
@@ -255,7 +255,7 @@ PacmanGame.prototype = {
 
         this.updateLife();
 
-        if ((this.gameOver === true || this.gameWin === true) && this.cursors.r.isDown)
+        if ((this.gameOver == true || this.gameWin == true) && this.cursors.r.isDown)
             this.newGame();
     },
     
@@ -331,7 +331,7 @@ PacmanGame.prototype = {
     },
 
     updateLife: function() {
-        for (var i = 2; i > 0; i--) {
+        for (var i = 2; i > /*this.pacman.life - 1 */0; i--) {
             var image = this.livesImage[i];
             if (image) {
                 if (i > this.pacman.life - 1)
@@ -359,7 +359,7 @@ PacmanGame.prototype = {
 
         if (this.lastKeyPressed < this.time.time) {
             if (this.cursors.d.isDown) {
-                this.DEBUG_ON = (!this.DEBUG_ON);
+                this.DEBUG_ON = (this.DEBUG_ON) ? false : true;
                 this.lastKeyPressed = this.time.time + this.KEY_COOLING_DOWN_TIME;
             }
         }
@@ -406,7 +406,9 @@ PacmanGame.prototype = {
     },
 
     checkDieTime: function() {
-        return this.lastDieTime + 2000 <= this.time.time;
+        if (this.lastDieTime + 2000 > this.time.time)
+            return false;
+        else return true;
     },
 
     getCurrentMode: function() {
