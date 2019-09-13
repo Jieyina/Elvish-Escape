@@ -36,8 +36,9 @@ Sounds.prototype.createAllInstances = function() {
 };
 
 Sounds.prototype.playBgm = function() {
-    this.bgm.play();         // Debugging
-    this.bgm_attack.stop();
+    if (this.bgm_attack.isPlaying)
+        this.bgm_attack.stop();
+    this.bgm.play();
 };
 
 Sounds.prototype.playBgmAttack = function() {

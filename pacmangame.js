@@ -80,13 +80,16 @@ var PacmanGame = function (game) {
     this.lastKeyPressed = 0;
     
     this.game = game;
-    this.sounds;
+    this.sounds = null;
     this.killCombo = 0;
 };
 
 PacmanGame.prototype = {
 
     init: function () {
+        if (this.game.sound.context.state === 'suspended') {
+            this.game.sound.context.resume();
+        }
         this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
         this.scale.pageAlignHorizontally = true;
         // this.scale.pageAlignVertically = true;
@@ -150,14 +153,14 @@ PacmanGame.prototype = {
         }
 
         // Score and debug texts
-        this.scoreText = game.add.text(20, 272, "Score: " + this.score, { fontSize: "24px", fill: "#fff" });
-        this.winText = game.add.text(230, 140, "", { fontSize: "36px", fill: "#fff" });
-        this.loseText = game.add.text(230, 140, "", { fontSize: "36px", fill: "#fff" });
-        this.loseHint = game.add.text(190, 230, "", { fontSize: "24px", fill: "#fff" });
+        this.scoreText = this.game.add.text(20, 272, "Score: " + this.score, { fontSize: "24px", fill: "#fff" });
+        this.winText = this.game.add.text(230, 140, "", { fontSize: "36px", fill: "#fff" });
+        this.loseText = this.game.add.text(230, 140, "", { fontSize: "36px", fill: "#fff" });
+        this.loseHint = this.game.add.text(190, 230, "", { fontSize: "24px", fill: "#fff" });
         
-        this.cursors = this.input.keyboard.createCursorKeys();
-        this.cursors["d"] = this.input.keyboard.addKey(Phaser.Keyboard.D);
-        this.cursors["r"] = this.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+        this.cursors = this.game.input.keyboard.createCursorKeys();
+        this.cursors["d"] = this.game.input.keyboard.addKey(Phaser.Keyboard.D);
+        this.cursors["r"] = this.game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
         //this.game.time.events.add(1250, this.sendExitOrder, this);
         //this.game.time.events.add(7000, this.sendAttackOrder, this);
         
@@ -173,6 +176,7 @@ PacmanGame.prototype = {
         
         this.gimeMeExitOrder(this.pinky);
         this.sound.playBgm();
+        console.log("bgm play")
     },
 
     update: function () {
@@ -347,7 +351,6 @@ PacmanGame.prototype = {
             this.ghosts[i].respawn();
         }
         this.pacman.respawn();
-        this.sound.playBgm();
     },
 
     checkKeys: function () {
