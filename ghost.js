@@ -1,14 +1,16 @@
-var Ghost = function(game, key, name, startPos, startDir) {
+var Ghost = function(game, key, name, startPos, startDir, scatterDes, returnDes, exitDes) {
     this.game = game;
     this.key  = key;
     this.name = name;
-    
+
     this.gridsize = this.game.gridsize;
     this.safetiles = this.game.safetile;
     this.startDir = startDir;
     this.startPos = startPos;
     this.threshold = 6;
-    
+    this.returnDes = returnDes;
+    this.exitDes = exitDes;
+
     this.turnTimer = 0;
     this.TURNING_COOLDOWN = 150;
     this.RETURNING_COOLDOWN = 100;
@@ -20,43 +22,25 @@ var Ghost = function(game, key, name, startPos, startDir) {
     this.EXIT_HOME  = "leaving_home";
     this.RETURNING_HOME = "returning_home";
     this.lastDirection = null;
-    
-    this.mode = this.AT_HOME;
+
+    if (this.name === "blinky") this.mode = this.SCATTER;
+    else this.mode = this.AT_HOME;
+    this.turnPoint = new Phaser.Point();
     this.ghostDestination = new Phaser.Point();
-    this.scatterDestination = new Phaser.Point(18 * this.gridsize, 20 * this.gridsize);
-    this.returnDestination = new Phaser.Point(9 * this.gridsize, 10 * this.gridsize);
-    
-    this.ghostSpeed = 150;
-    this.ghostScatterSpeed = 130;
-    this.ghostFrightenedSpeed = 75;
-    this.cruiseElroySpeed = 170;
+    this.returnDestination = new Phaser.Point(returnDes.x * this.gridsize + this.gridsize/2, returnDes.y * this.gridsize + this.gridsize/2);
+    this.scatterDestination = new Phaser.Point(scatterDes.x * this.gridsize + this.gridsize/2, scatterDes.y * this.gridsize + this.gridsize/2);
+    this.exitDestination = new Phaser.Point(exitDes.x * this.gridsize + this.gridsize/2, exitDes.y * this.gridsize + this.gridsize/2);
+
+    this.ghostSpeed = this.game.ghostSpeed;
+    this.ghostScatterSpeed = this.game.ghostScatterSpeed;
+    this.ghostFrightenedSpeed = this.game.ghostFrightenedSpeed;
+    this.cruiseSpeed = this.game.cruiseSpeed;
+    this.ElroySpeed = this.game.ElroySpeed;
     this.directions = [ null, null, null, null, null ];
     // Phaser.none/left/right/up/down = 0/1/2/3/4
     this.opposites = [ Phaser.NONE, Phaser.RIGHT, Phaser.LEFT, Phaser.DOWN, Phaser.UP ];
     this.currentDir = startDir;
-    
-    this.turnPoint = new Phaser.Point();
-    
-    var offsetGhost = 0;
-    switch (this.name) {
-        case "clyde":
-            //offsetGhost = 4;
-            this.scatterDestination = new Phaser.Point(0, 20 * this.gridsize);
-            break;
-        case "pinky":
-            //offsetGhost = 8;
-            this.scatterDestination = new Phaser.Point(0, 0);
-            break;
-        case "blinky":
-            //offsetGhost = 12;
-            this.scatterDestination = new Phaser.Point(18 * this.gridsize, 0);
-            this.mode = this.SCATTER;
-            break;
-            
-        default:
-            break;
-    }
-    
+
     this.ghost = this.game.add.sprite((startPos.x * this.gridsize) + this.gridsize/2, (startPos.y * this.gridsize) + this.gridsize/2, key, 0);
     this.ghost.name = this.name;
     this.ghost.anchor.set(0.5);
@@ -76,10 +60,10 @@ var Ghost = function(game, key, name, startPos, startDir) {
     this.ghost.animations.add("frightened left", [36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], 15, true);
     this.ghost.animations.add("frightened right", [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23], 15, true);
     //this.ghost.play(startDir);
-    
+
     this.game.physics.arcade.enable(this.ghost);
     this.ghost.body.setSize(26, 26, 2, 0);
-    
+
     this.move(startDir);
 };
 
@@ -136,59 +120,68 @@ Ghost.prototype = {
                     break;
                     
                 case this.RETURNING_HOME:
-                    this.ghostDestination = this.returnDestination;
-                    if (this.turnTimer < this.game.time.time) {
-                        var distanceToObj = 999999;
-                        var direction, decision, bestDecision;
-                        for (q=0; q<possibleExits.length; q++) {
-                            direction = possibleExits[q];
-                            switch (direction) {
-                                case Phaser.LEFT:
-                                    decision = new Phaser.Point((x-1)*this.gridsize + (this.gridsize/2),
-                                        (y * this.gridsize) + (this.gridsize / 2));
-                                    break;
-                                case Phaser.RIGHT:
-                                    decision = new Phaser.Point((x+1)*this.gridsize + (this.gridsize/2),
-                                        (y * this.gridsize) + (this.gridsize / 2));
-                                    break;
-                                case Phaser.UP:
-                                    decision = new Phaser.Point(x * this.gridsize + (this.gridsize/2),
-                                        ((y-1)*this.gridsize) + (this.gridsize / 2));
-                                    break;
-                                case Phaser.DOWN:
-                                    decision = new Phaser.Point(x * this.gridsize + (this.gridsize/2),
-                                        ((y+1)*this.gridsize) + (this.gridsize / 2));
-                                    break;
-                                default:
-                                    break;
-                            }
-                            var dist = this.ghostDestination.distance(decision);
-                            if (dist < distanceToObj) {
-                                bestDecision = direction;
-                                distanceToObj = dist;
-                            }
-                        }
-
-                        /* if (this.game.isSpecialTile({x: x, y: y}) && bestDecision === Phaser.UP) {
-                            bestDecision = this.currentDir;
-                        } */
-
-                        // snap to grid exact position before turning
-                        this.ghost.x = this.turnPoint.x;
-                        this.ghost.y = this.turnPoint.y;
-
-                        this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
-                        this.lastDirection = this.currentDir;
-                        this.move(bestDecision);
-
-                        this.turnTimer = this.game.time.time + this.TURNING_COOLDOWN;
-                    }
-                    if (this.hasReachedHome()) {
+                    if (x === this.returnDes.x && y === this.returnDes.y) {
                         this.ghost.x = this.turnPoint.x;
                         this.ghost.y = this.turnPoint.y;
                         this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
                         this.mode = this.AT_HOME;
                         this.game.gimeMeExitOrder(this);
+                        return;
+                    }
+                    this.ghostDestination = this.returnDestination;
+                    if (this.turnTimer < this.game.time.time) {
+                        var distanceToObj = 999999;
+                        var direction, decision, bestDecision;
+                        if (possibleExits === [])
+                        {
+                            this.ghost.x = this.turnPoint.x;
+                            this.ghost.y = this.turnPoint.y;
+
+                            this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
+                            this.lastDirection = this.currentDir;
+                            this.move(this.opposites[this.currentDir]);
+                        }
+                        else if (possibleExits.length >= 1)
+                        {
+                            for (q=0; q<possibleExits.length; q++) {
+                                direction = possibleExits[q];
+                                switch (direction) {
+                                    case Phaser.LEFT:
+                                        decision = new Phaser.Point((x-1)*this.gridsize + (this.gridsize/2),
+                                            (y * this.gridsize) + (this.gridsize / 2));
+                                        break;
+                                    case Phaser.RIGHT:
+                                        decision = new Phaser.Point((x+1)*this.gridsize + (this.gridsize/2),
+                                            (y * this.gridsize) + (this.gridsize / 2));
+                                        break;
+                                    case Phaser.UP:
+                                        decision = new Phaser.Point(x * this.gridsize + (this.gridsize/2),
+                                            ((y-1)*this.gridsize) + (this.gridsize / 2));
+                                        break;
+                                    case Phaser.DOWN:
+                                        decision = new Phaser.Point(x * this.gridsize + (this.gridsize/2),
+                                            ((y+1)*this.gridsize) + (this.gridsize / 2));
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                var dist = this.ghostDestination.distance(decision);
+                                if (dist < distanceToObj) {
+                                    bestDecision = direction;
+                                    distanceToObj = dist;
+                                }
+                            }
+
+                            // snap to grid exact position before turning
+                            this.ghost.x = this.turnPoint.x;
+                            this.ghost.y = this.turnPoint.y;
+
+                            this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
+                            this.lastDirection = this.currentDir;
+                            this.move(bestDecision);
+                        }
+
+                        this.turnTimer = this.game.time.time + this.TURNING_COOLDOWN;
                     }
                     break;
                     
@@ -197,108 +190,136 @@ Ghost.prototype = {
                     if (this.turnTimer < this.game.time.time) {
                         var distanceToObj = 999999;
                         var direction, decision, bestDecision;
-                        for (q=0; q<possibleExits.length; q++) {
-                            direction = possibleExits[q];
-                            switch (direction) {
-                                case Phaser.LEFT:
-                                    decision = new Phaser.Point((x-1)*this.gridsize + (this.gridsize/2), 
-                                                                (y * this.gridsize) + (this.gridsize / 2));
-                                    break;
-                                case Phaser.RIGHT:
-                                    decision = new Phaser.Point((x+1)*this.gridsize + (this.gridsize/2), 
-                                                                (y * this.gridsize) + (this.gridsize / 2));
-                                    break;
-                                case Phaser.UP:
-                                    decision = new Phaser.Point(x * this.gridsize + (this.gridsize/2), 
-                                                                ((y-1)*this.gridsize) + (this.gridsize / 2));
-                                    break;
-                                case Phaser.DOWN:
-                                    decision = new Phaser.Point(x * this.gridsize + (this.gridsize/2), 
-                                                                ((y+1)*this.gridsize) + (this.gridsize / 2));
-                                    break;
-                                default:
-                                    break;
-                            }
-                            var dist = this.ghostDestination.distance(decision);
-                            if (dist < distanceToObj) {
-                                bestDecision = direction;
-                                distanceToObj = dist;
-                            }
+                        if (possibleExits.length < 1)
+                        {
+                            this.ghost.x = this.turnPoint.x;
+                            this.ghost.y = this.turnPoint.y;
+
+                            this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
+                            this.lastDirection = this.currentDir;
+                            this.move(this.opposites[this.currentDir]);
                         }
-                        
-                        /* if (this.game.isSpecialTile({x: x, y: y}) && bestDecision === Phaser.UP) {
-                            bestDecision = this.currentDir;
-                        } */
+                        else
+                        {
+                            for (q=0; q<possibleExits.length; q++) {
+                                direction = possibleExits[q];
+                                switch (direction) {
+                                    case Phaser.LEFT:
+                                        decision = new Phaser.Point((x-1)*this.gridsize + (this.gridsize/2),
+                                            (y * this.gridsize) + (this.gridsize / 2));
+                                        break;
+                                    case Phaser.RIGHT:
+                                        decision = new Phaser.Point((x+1)*this.gridsize + (this.gridsize/2),
+                                            (y * this.gridsize) + (this.gridsize / 2));
+                                        break;
+                                    case Phaser.UP:
+                                        decision = new Phaser.Point(x * this.gridsize + (this.gridsize/2),
+                                            ((y-1)*this.gridsize) + (this.gridsize / 2));
+                                        break;
+                                    case Phaser.DOWN:
+                                        decision = new Phaser.Point(x * this.gridsize + (this.gridsize/2),
+                                            ((y+1)*this.gridsize) + (this.gridsize / 2));
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                var dist = this.ghostDestination.distance(decision);
+                                if (dist < distanceToObj) {
+                                    bestDecision = direction;
+                                    distanceToObj = dist;
+                                }
+                            }
 
-                        // snap to grid exact position before turning
-                        this.ghost.x = this.turnPoint.x;
-                        this.ghost.y = this.turnPoint.y;
+                            // snap to grid exact position before turning
+                            this.ghost.x = this.turnPoint.x;
+                            this.ghost.y = this.turnPoint.y;
 
-                        this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
-                        this.lastDirection = this.currentDir;
-                        this.move(bestDecision);
+                            this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
+                            this.lastDirection = this.currentDir;
+                            this.move(bestDecision);
+                        }
 
                         this.turnTimer = this.game.time.time + this.TURNING_COOLDOWN;
                     }
                     break;
                     
                 case this.AT_HOME:
-                    if (x === 8 && this.currentDir !== Phaser.RIGHT) {
+                    if (!canContinue) {
                         this.ghost.x = this.turnPoint.x;
                         this.ghost.y = this.turnPoint.y;
                         this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
                         this.lastDirection = this.currentDir;
-                        this.move(Phaser.RIGHT);
-                    } else if (x === 10 && this.currentDir !== Phaser.LEFT) {
-                        this.ghost.x = this.turnPoint.x;
-                        this.ghost.y = this.turnPoint.y;
-                        this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
-                        this.lastDirection = this.currentDir;
-                        this.move(Phaser.LEFT);
-                    } else if (x === 9 && this.currentDir === Phaser.DOWN) {
-                        this.ghost.x = this.turnPoint.x;
-                        this.ghost.y = this.turnPoint.y;
-                        this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
-                        this.lastDirection = this.currentDir;
-                        this.move(Phaser.DOWN);
-                    } else if (x === 9 && this.currentDir === Phaser.UP) {
-                        this.ghost.x = this.turnPoint.x;
-                        this.ghost.y = this.turnPoint.y;
-                        this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
-                        this.lastDirection = this.currentDir;
-                        this.move(Phaser.RIGHT);
+                        var dir = (this.currentDir === Phaser.LEFT) ? Phaser.RIGHT : Phaser.LEFT;
+                        this.move(dir);
                     } else {
-                        this.lastDirection = this.currentDir;
                         this.move(this.currentDir);
                     }
                     break;
                     
                 case this.EXIT_HOME:
-                    if (x === 8 && this.currentDir !== Phaser.LEFT) {
-                        this.ghost.x = this.turnPoint.x;
-                        this.ghost.y = this.turnPoint.y;
-                        this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
-                        this.lastDirection = this.currentDir;
-                        this.move(Phaser.LEFT);
-                    } else if (x === 10 && this.currentDir !== Phaser.RIGHT) {
-                        this.ghost.x = this.turnPoint.x;
-                        this.ghost.y = this.turnPoint.y;
-                        this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
-                        this.lastDirection = this.currentDir;
-                        this.move(Phaser.RIGHT);
-                    } else if (x === 9 && this.currentDir !== Phaser.UP) {
-                        this.ghost.x = this.turnPoint.x;
-                        this.ghost.y = this.turnPoint.y;
-                        this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
-                        this.lastDirection = this.currentDir;
-                        this.move(Phaser.UP);
-                    } else if (x === 6 && y === 10 || x === 12 && y === 10 || x === 9 && y === 8) {
+                    if (x === this.exitDes.x && y === this.exitDes.y)
+                    {
                         this.ghost.x = this.turnPoint.x;
                         this.ghost.y = this.turnPoint.y;
                         this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
                         this.mode = this.game.getCurrentMode();
                         return;
-                    } 
+                    }
+                    this.ghostDestination = this.exitDestination;
+                    if (this.turnTimer < this.game.time.time) {
+                        var distanceToObj = 999999;
+                        var direction, decision, bestDecision;
+                        if (possibleExits.length < 1)
+                        {
+                            this.ghost.x = this.turnPoint.x;
+                            this.ghost.y = this.turnPoint.y;
+
+                            this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
+                            this.lastDirection = this.currentDir;
+                            this.move(this.opposites[this.currentDir]);
+                        }
+                        else
+                        {
+                            for (q=0; q<possibleExits.length; q++) {
+                                direction = possibleExits[q];
+                                switch (direction) {
+                                    case Phaser.LEFT:
+                                        decision = new Phaser.Point((x-1)*this.gridsize + (this.gridsize/2),
+                                            (y * this.gridsize) + (this.gridsize / 2));
+                                        break;
+                                    case Phaser.RIGHT:
+                                        decision = new Phaser.Point((x+1)*this.gridsize + (this.gridsize/2),
+                                            (y * this.gridsize) + (this.gridsize / 2));
+                                        break;
+                                    case Phaser.UP:
+                                        decision = new Phaser.Point(x * this.gridsize + (this.gridsize/2),
+                                            ((y-1)*this.gridsize) + (this.gridsize / 2));
+                                        break;
+                                    case Phaser.DOWN:
+                                        decision = new Phaser.Point(x * this.gridsize + (this.gridsize/2),
+                                            ((y+1)*this.gridsize) + (this.gridsize / 2));
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                var dist = this.ghostDestination.distance(decision);
+                                if (dist < distanceToObj) {
+                                    bestDecision = direction;
+                                    distanceToObj = dist;
+                                }
+                            }
+
+                            // snap to grid exact position before turning
+                            this.ghost.x = this.turnPoint.x;
+                            this.ghost.y = this.turnPoint.y;
+
+                            this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
+                            this.lastDirection = this.currentDir;
+                            this.move(bestDecision);
+                        }
+
+                        this.turnTimer = this.game.time.time + this.TURNING_COOLDOWN;
+                    }
                     break;
                     
                 case this.SCATTER:
@@ -306,46 +327,54 @@ Ghost.prototype = {
                     if (this.turnTimer < this.game.time.time) {
                         var distanceToObj = 999999;
                         var direction, decision, bestDecision;
-                        for (q=0; q<possibleExits.length; q++) {
-                            direction = possibleExits[q];
-                            switch (direction) {
-                                case Phaser.LEFT:
-                                    decision = new Phaser.Point((x-1)*this.gridsize + (this.gridsize/2),
-                                        (y * this.gridsize) + (this.gridsize / 2));
-                                    break;
-                                case Phaser.RIGHT:
-                                    decision = new Phaser.Point((x+1)*this.gridsize + (this.gridsize/2),
-                                        (y * this.gridsize) + (this.gridsize / 2));
-                                    break;
-                                case Phaser.UP:
-                                    decision = new Phaser.Point(x * this.gridsize + (this.gridsize/2),
-                                        ((y-1)*this.gridsize) + (this.gridsize / 2));
-                                    break;
-                                case Phaser.DOWN:
-                                    decision = new Phaser.Point(x * this.gridsize + (this.gridsize/2),
-                                        ((y+1)*this.gridsize) + (this.gridsize / 2));
-                                    break;
-                                default:
-                                    break;
-                            }
-                            var dist = this.ghostDestination.distance(decision);
-                            if (dist < distanceToObj) {
-                                bestDecision = direction;
-                                distanceToObj = dist;
-                            }
+                        if (possibleExits.length < 1)
+                        {
+                            this.ghost.x = this.turnPoint.x;
+                            this.ghost.y = this.turnPoint.y;
+
+                            this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
+                            this.lastDirection = this.currentDir;
+                            this.move(this.opposites[this.currentDir]);
                         }
+                        else
+                        {
+                            for (q=0; q<possibleExits.length; q++) {
+                                direction = possibleExits[q];
+                                switch (direction) {
+                                    case Phaser.LEFT:
+                                        decision = new Phaser.Point((x-1)*this.gridsize + (this.gridsize/2),
+                                            (y * this.gridsize) + (this.gridsize / 2));
+                                        break;
+                                    case Phaser.RIGHT:
+                                        decision = new Phaser.Point((x+1)*this.gridsize + (this.gridsize/2),
+                                            (y * this.gridsize) + (this.gridsize / 2));
+                                        break;
+                                    case Phaser.UP:
+                                        decision = new Phaser.Point(x * this.gridsize + (this.gridsize/2),
+                                            ((y-1)*this.gridsize) + (this.gridsize / 2));
+                                        break;
+                                    case Phaser.DOWN:
+                                        decision = new Phaser.Point(x * this.gridsize + (this.gridsize/2),
+                                            ((y+1)*this.gridsize) + (this.gridsize / 2));
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                var dist = this.ghostDestination.distance(decision);
+                                if (dist < distanceToObj) {
+                                    bestDecision = direction;
+                                    distanceToObj = dist;
+                                }
+                            }
 
-                        /* if (this.game.isSpecialTile({x: x, y: y}) && bestDecision === Phaser.UP) {
-                            bestDecision = this.currentDir;
-                        } */
+                            // snap to grid exact position before turning
+                            this.ghost.x = this.turnPoint.x;
+                            this.ghost.y = this.turnPoint.y;
 
-                        // snap to grid exact position before turning
-                        this.ghost.x = this.turnPoint.x;
-                        this.ghost.y = this.turnPoint.y;
-
-                        this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
-                        this.lastDirection = this.currentDir;
-                        this.move(bestDecision);
+                            this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
+                            this.lastDirection = this.currentDir;
+                            this.move(bestDecision);
+                        }
 
                         this.turnTimer = this.game.time.time + this.TURNING_COOLDOWN;
                     }
@@ -440,14 +469,6 @@ Ghost.prototype = {
         return new Phaser.Point((x * this.gridsize) + (this.gridsize / 2), (y * this.gridsize) + (this.gridsize / 2));
     },
     
-    hasReachedHome: function() {
-        if (this.ghost.x < 8*this.gridsize || this.ghost.x > 11*this.gridsize ||
-            this.ghost.y < 10*this.gridsize || this.ghost.y > 11*this.gridsize) {
-            return false;
-        }
-        return true;
-    },
-    
     move: function(dir) {
         this.currentDir = dir;
         
@@ -457,14 +478,15 @@ Ghost.prototype = {
         } else if (this.mode === this.RANDOM) {
             speed = this.ghostFrightenedSpeed;
         } else if (this.mode === this.RETURNING_HOME) {
-            speed = this.cruiseElroySpeed;
+            speed = this.cruiseSpeed;
             // this.ghost.animations.play(dir+20);
         } else {
             speed = this.ghostSpeed;
             // this.ghost.animations.play(dir);
-            if (this.name === "blinky" && this.game.numDots < 3) {
-                speed = this.cruiseElroySpeed;
-                // this.mode = this.CHASE;
+            if (this.name === "blinky" && this.game.numDots === 2) {
+                speed = this.cruiseSpeed;
+            } else if (this.name === "blinky" && this.game.numDots < 2) {
+                speed = this.ElroySpeed;
             }
         }
         

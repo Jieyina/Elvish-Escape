@@ -9,6 +9,12 @@ var PacmanGame = function (game) {
     this.TOTAL_KEYS = 0;
     this.score = 0;
     this.scoreText = null;
+
+    this.ghostSpeed = 112;
+    this.ghostScatterSpeed = 105;
+    this.ghostFrightenedSpeed = 75;
+    this.cruiseSpeed = 120;
+    this.ElroySpeed = 128;
     
     this.pacman = null; 
     this.clyde = null;
@@ -21,10 +27,14 @@ var PacmanGame = function (game) {
     this.gameWin = false;
     this.ghosts = [];
     this.livesImage = [];
+    this.goalPos = {x: 8, y:11};
 
-    this.safetile = [12, 13, 14, 21, 22, 23, 30, 31, 32, 37, 46, 62, 65, 66, 71, 75, 76];
+    this.safetile = [14, 51, 41, 24, 86, 85, 23, 25, 34, 72];
     this.gridsize = 32;
     this.threshold = 3;
+
+    this.chest1Unlocked = false;
+    this.chest2Unlocked = false;
     
     /* this.SPECIAL_TILES = [
         { x: 12, y: 11 },
@@ -73,9 +83,8 @@ var PacmanGame = function (game) {
     this.isPaused = false;
     this.FRIGHTENED_MODE_TIME = 7000;
     
-    this.ORIGINAL_OVERFLOW_ERROR_ON = false;
+
     this.DEBUG_ON = false;
-    
     this.KEY_COOLING_DOWN_TIME = 250;
     this.lastKeyPressed = 0;
     
@@ -101,55 +110,97 @@ PacmanGame.prototype = {
     },
 
     preload: function () {
-        this.load.image('tiles', 'assets/tile32.png');
+        this.load.image('tiles', 'assets/levels/Tile_Level2.png');
         this.load.image("lifecounter", "assets/heart32.png");
-        this.load.image('key_yellow', 'assets/pickups/key_yellow.png');
-        this.load.image('key_red', 'assets/pickups/Key_Red.png');
-        this.load.image('key_blue', 'assets/pickups/Key_Blue.png');
-        this.load.image('key_green', 'assets/pickups/Key_Green.png');
-        this.load.image('sword', 'assets/pickups/sword.png');
-        this.load.tilemap('map', 'assets/level1.json', null, Phaser.Tilemap.TILED_JSON);
-        this.load.spritesheet('hero', 'assets/hero/pax.png', 32, 32);
+        this.load.spritesheet('key_yellow', 'assets/pickups/yellow-key-sparkle.png', 32, 32);
+        this.load.spritesheet('key_red', 'assets/pickups/red-key-sparkle.png', 32, 32);
+        this.load.spritesheet('key_blue', 'assets/pickups/blue-key-sparkle.png', 32, 32);
+        this.load.spritesheet('key_green', 'assets/pickups/green-key-sparkle.png', 32, 32);
+        this.load.image('sword', 'assets/pickups/sword-big.png');
+        this.load.tilemap('map', 'assets/levels/level2.json', null, Phaser.Tilemap.TILED_JSON);
+        this.load.spritesheet('hero', 'assets/hero/elf.png', 32, 32);
         this.load.spritesheet('monster1', 'assets/monsters/zombie_red_sheet.png', 32, 32);
         this.load.spritesheet('monster2', 'assets/monsters/zombie_pink_sheet.png', 32, 32);
         this.load.spritesheet('monster3', 'assets/monsters/zombie_blue_sheet.png', 32, 32);
         this.load.spritesheet('monster4', 'assets/monsters/zombie_orange_sheet.png', 32, 32);
+        this.load.spritesheet('treasure', 'assets/pickups/treasure.png', 32, 32);
+        this.load.spritesheet('torch', 'assets/props/torch.png', 32, 32);
+        this.load.spritesheet('grass', 'assets/props/grass.png', 32, 32);
         this.sound.loadAllSounds();
     },
 
     create: function () {
         this.sound.createAllInstances();
         this.map = this.add.tilemap('map');
-        this.map.addTilesetImage('tile32', 'tiles');
+        this.map.addTilesetImage('Tile1', 'tiles');
 
-        this.layer = this.map.createLayer('background');
-        this.item = this.map.createLayer('items');
+        this.layer = this.map.createLayer('ground');
+        this.grass = this.map.createLayer('grass');
+        this.torch = this.map.createLayer('torch');
 
+        this.torchUp = this.add.group();
+        this.map.createFromTiles(89, -1, 'torch', this.torch, this.torchUp);
+        this.torchUp.forEach(function(child) {
+            child.animations.add('flame', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], 15, true);
+            child.play('flame');}, this);
+
+        this.torchDown = this.add.group();
+        this.map.createFromTiles(60, -1, 'torch', this.torch, this.torchDown);
+        this.torchDown.forEach(function(child) {
+            child.animations.add('flame', [24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35], 15, true);
+            child.play('flame');}, this);
+
+        this.torchLeft = this.add.group();
+        this.map.createFromTiles(70, -1, 'torch', this.torch, this.torchLeft);
+        this.torchLeft.forEach(function(child) {
+            child.animations.add('flame', [36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], 15, true);
+            child.play('flame');}, this);
+
+        this.torchRight = this.add.group();
+        this.map.createFromTiles(80, -1, 'torch', this.torch, this.torchRight);
+        this.torchRight.forEach(function(child) {
+            child.animations.add('flame', [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23], 15, true);
+            child.play('flame');}, this);
+
+        this.grasses = this.add.group();
+        this.map.createFromTiles(90, -1, 'grass', this.grass, this.grasses);
+        this.grasses.forEach(function(child) {
+            child.animations.add('wave', [0, 1, 2, 3, 4, 5], 15, true);
+            child.play('wave');}, this);
+
+
+        this.item = this.map.createLayer('item');
         this.keys = this.add.physicsGroup();
-        this.key1 = this.map.createFromTiles(42, 22, 'key_yellow', this.item, this.keys);
-        this.key2 = this.map.createFromTiles(2, 22, 'key_red', this.item, this.keys);
-        this.key3 = this.map.createFromTiles(38, 21, 'key_blue', this.item, this.keys);
-        this.key4 = this.map.createFromTiles(6, 22, 'key_green', this.item, this.keys);
+        this.map.createFromTiles(2, -1, 'key_yellow', this.item, this.keys);
+        this.map.createFromTiles(46, -1, 'key_red', this.item, this.keys);
+        this.map.createFromTiles(6, -1, 'key_blue', this.item, this.keys);
+        this.map.createFromTiles(42, -1, 'key_green', this.item, this.keys);
         this.TOTAL_KEYS = this.numKeys;
+        this.keys.forEach(function(child) {
+            child.animations.add('shine', [0, 1, 2, 3, 4, 5], 15, true);
+            child.play('shine');}, this);
         for (var i = 1; i < this.numKeys; i++) {
             this.keys.children[i].kill();
         }
         
         this.pills = this.add.physicsGroup();
-        this.numPills = this.map.createFromTiles([59, 80], [13, 31], "sword", this.item, this.pills);
+        this.numPills = this.map.createFromTiles(65, -1, "sword", this.item, this.pills);
 
-        //  The keys will need to be offset by 12px to put them back in the middle of the grid
-        // this.keys.setAll('x', 12, false, false, 1);
-        // this.keys.setAll('y', 12, false, false, 1);
+        this.treasure = this.add.physicsGroup();
+        this.map.createFromTiles(20, -1, 'treasure', this.item, this.treasure);
+        this.map.createFromTiles(88, -1, 'treasure', this.item, this.treasure);
+        this.treasure.forEach(function(child) {
+            child.animations.add('unlock', [0, 1, 2, 3, 4, 5], 8, false);
+            child.animations.add('lock', [0], 8, true);}, this);
 
         //  Pacman should collide with everything except the safe tile
         this.map.setCollisionByExclusion(this.safetile, true, this.layer);
-        this.map.setCollisionByExclusion([35], true, this.item);
+        this.map.setCollisionByExclusion([38], true, this.item);
 
 		// Our hero
-        this.pacman = new Pacman(this, "hero");
+        this.pacman = new Pacman(this, "hero", {x:8, y:13});
         for (var i =  0; i < this.pacman.life; i++) {
-            this.livesImage.push(this.add.image(490 + (i * 32), 400, 'lifecounter'));
+            this.livesImage.push(this.add.image(448 + (i * 32), 575, 'lifecounter'));
         }
 
         // Score and debug texts
@@ -168,10 +219,10 @@ PacmanGame.prototype = {
         
         // Ghosts
         // debugger;
-        this.blinky = new Ghost(this, "monster1", "blinky", {x:9, y:8}, Phaser.RIGHT);
-        this.pinky = new Ghost(this, "monster2", "pinky", {x:9, y:10}, Phaser.LEFT);
-        this.inky = new Ghost(this, "monster3", "inky", {x:8, y:10}, Phaser.LEFT);
-        this.clyde = new Ghost(this, "monster4", "clyde", {x:10, y:10}, Phaser.RIGHT);
+        this.blinky = new Ghost(this, "monster1", "blinky", {x:8, y:3}, Phaser.LEFT, {x:2, y:1}, {x:8, y:1}, {x:8, y:3});
+        this.pinky = new Ghost(this, "monster2", "pinky", {x:8, y:1}, Phaser.RIGHT, {x:14, y:1}, {x:8, y:1}, {x:8, y:3});
+        this.inky = new Ghost(this, "monster3", "inky", {x:7, y:1}, Phaser.RIGHT, {x:14, y:17}, {x:8, y:1}, {x:8, y:3});
+        this.clyde = new Ghost(this, "monster4", "clyde", {x:9, y:1}, Phaser.LEFT, {x:2, y:17}, {x:8, y:1}, {x:8, y:3});
         this.ghosts.push(this.clyde, this.pinky, this.inky, this.blinky);
         
         this.gimeMeExitOrder(this.pinky);
@@ -181,12 +232,12 @@ PacmanGame.prototype = {
 
     update: function () {
         this.scoreText.text = "Score: " + this.score;
-        if (this.gameWin == true) {
+        if (this.gameWin === true) {
             this.winText.text = "You Win!";
         } else {
             this.winText.text = "";
         }
-        if (this.gameOver == true) {
+        if (this.gameOver === true) {
             this.loseText.text = "You Lose!";
             this.loseHint.text = "Press Enter to restart.";
         } else {
@@ -254,7 +305,7 @@ PacmanGame.prototype = {
             }
         }
 
-        if ((this.gameOver == true || this.gameWin == true) && this.cursors.r.isDown)
+        if ((this.gameOver === true || this.gameWin === true) && this.cursors.r.isDown)
             this.newGame();
     },
     
@@ -358,7 +409,7 @@ PacmanGame.prototype = {
 
         if (this.lastKeyPressed < this.time.time) {
             if (this.cursors.d.isDown) {
-                this.DEBUG_ON = (this.DEBUG_ON) ? false : true;
+                this.DEBUG_ON = (!this.DEBUG_ON);
                 this.lastKeyPressed = this.time.time + this.KEY_COOLING_DOWN_TIME;
             }
         }
@@ -400,9 +451,7 @@ PacmanGame.prototype = {
     },
 
     checkDieTime: function() {
-        if (this.lastDieTime + 2000 > this.time.time)
-            return false;
-        else return true;
+        return this.lastDieTime + 2000 <= this.time.time;
     },
 
     getCurrentMode: function() {
@@ -461,6 +510,8 @@ PacmanGame.prototype = {
         this.keys.callAll('kill');
         this.keys.getChildAt(0).revive();
         this.pills.callAll('revive');
+        this.treasure.callAll('revive');
+        this.treasure.callAll('play', null, 'lock');
         this.numKeys = 4;
         this.numPills = 2;
         for (let i = 0; i < this.pacman.life; i++) {
