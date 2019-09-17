@@ -37,7 +37,7 @@ var Pacman = function(game, key, startPos) {
     // this.sprite.animations.add("death", [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], 10, false);
     
     this.game.physics.arcade.enable(this.sprite);
-    this.sprite.body.setSize(26, 32, this.offsetX, this.offsetY);
+    this.sprite.body.setSize(28, 32, this.offsetX, this.offsetY);
     
     this.sprite.play('munch');
     this.move(Phaser.LEFT);
@@ -176,12 +176,16 @@ Pacman.prototype.eatDot = function(pacman, key) {
 
     if (this.game.numKeys === 3) {
         this.game.treasure.children[0].revive();
-        this.game.treasure.children[0].play('unlock');
+        this.game.game.time.events.add(1500, this.unlockTreasure, this, this.game.treasure.children[0]);
+
     }
     if (this.game.numKeys === 1) {
         this.game.treasure.children[1].revive();
-        this.game.treasure.children[1].play('unlock');
+        this.game.game.time.events.add(1500, this.unlockTreasure, this, this.game.treasure.children[1]);
     }
+
+    if (this.game.numKeys === 0)
+        this.game.door.children[0].play('door-blinking');
 };
 
 Pacman.prototype.eatPill = function(pacman, pill) {
@@ -189,21 +193,25 @@ Pacman.prototype.eatPill = function(pacman, pill) {
     
     // this.game.score += 100;
     this.game.numPills --;
+    this.game.killCombo = 0;
 
     this.sprite.play('armed');
     this.game.gameSound.playBgmAttack();
+    for (var i=0; i<this.game.ghosts.length; i++) {
+        this.game.ghosts[i].enterFrightenedMode();
+    }
     this.game.enterFrightenedMode();
 };
 
 Pacman.prototype.pickTreasure = function(pacman, treasure) {
     var i = this.game.treasure.getIndex(treasure);
-    if (i === 0 && this.game.numKeys <= 3)
+    if (i === 0 && this.game.treasureUnlocked[0] === true)
     {
         treasure.kill();
         this.game.score += 200;
         this.game.gameSound.playTreasurePick();
     }
-    if (i === 1 && this.game.numKeys <= 1)
+    if (i === 1 && this.game.treasureUnlocked[1] === true)
     {
         treasure.kill();
         this.game.score += 200;
@@ -284,4 +292,10 @@ Pacman.prototype.respawn = function () {
     this.sprite.body.reset(this.sprite.x, this.sprite.y);
     this.sprite.play('munch');
     this.move(Phaser.LEFT);
+};
+
+Pacman.prototype.unlockTreasure = function (treasure) {
+    this.game.treasureUnlocked.push(true);
+    treasure.play('unlock');
+    this.game.gameSound.playTreasureReveal();
 };

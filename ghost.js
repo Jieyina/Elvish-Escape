@@ -177,6 +177,9 @@ Ghost.prototype = {
                                     bestDecision = direction;
                                     distanceToObj = dist;
                                 }
+                                if (this.game.isSpecialTile({x: x, y: y}) && bestDecision === Phaser.DOWN) {
+                                    bestDecision = this.currentDir;
+                                }
                             }
 
                             // snap to grid exact position before turning

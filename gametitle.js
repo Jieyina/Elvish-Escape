@@ -12,8 +12,8 @@ gameTitle.prototype = {
 		if (this.bgm_menu.isPlaying)
 			this.bgm_menu.restart();
 		this.bgm_menu.play();
-		this.game.add.text(140, 200, "Kaba Kaba", { fontSize: "48px", fill: "#fff" });
-		this.game.add.text(100, 430, "Press Enter to start.", { fontSize: "36px", fill: "#fff" });
+		this.game.add.image(0, 0, 'title');
+		this.game.add.text(100, 280, "Press Enter to start.", { fontSize: "36px", fill: "#fff" });
 	},
 
 	update: function() {
