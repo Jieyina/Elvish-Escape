@@ -32,12 +32,12 @@ var Pacman = function(game, key, startPos) {
     //  Position Pacman at grid location 14x17 (the +8 accounts for his anchor)
     this.sprite = this.game.add.sprite((startPos.x * this.gridsize) + this.gridsize/2, (startPos.y * this.gridsize) + this.gridsize/2, key, 0);
     this.sprite.anchor.setTo(0.5);
-    this.sprite.animations.add('munch', [0, 1, 2, 3, 4, 5, 6, 7], 20, true);
-    this.sprite.animations.add('armed', [8, 9, 10, 11, 12, 13, 14, 15], 20, true);
+    this.sprite.animations.add('munch', [0, 1, 2, 3, 4, 5], 15, true);
+    this.sprite.animations.add('armed', [6, 7, 8, 9, 10, 11], 15, true);
     // this.sprite.animations.add("death", [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], 10, false);
     
     this.game.physics.arcade.enable(this.sprite);
-    this.sprite.body.setSize(32, 32, this.offsetX, this.offsetY);
+    this.sprite.body.setSize(26, 32, this.offsetX, this.offsetY);
     
     this.sprite.play('munch');
     this.move(Phaser.LEFT);
@@ -105,10 +105,10 @@ Pacman.prototype.update = function() {
         }
 
         //  Update our grid sensors
-        this.directions[1] = this.game.map.getTileLeft(this.game.layer.index, this.marker.x, this.marker.y);
-        this.directions[2] = this.game.map.getTileRight(this.game.layer.index, this.marker.x, this.marker.y);
-        this.directions[3] = this.game.map.getTileAbove(this.game.layer.index, this.marker.x, this.marker.y);
-        this.directions[4] = this.game.map.getTileBelow(this.game.layer.index, this.marker.x, this.marker.y);
+        this.directions[1] = this.game.map.getTile(this.marker.x - 1, this.marker.y, this.game.layer.index, true);
+        this.directions[2] = this.game.map.getTile(this.marker.x + 1, this.marker.y, this.game.layer.index, true);
+        this.directions[3] = this.game.map.getTile(this.marker.x, this.marker.y - 1, this.game.layer.index, true);
+        this.directions[4] = this.game.map.getTile(this.marker.x, this.marker.y + 1, this.game.layer.index, true);
 
         if (this.turning !== Phaser.NONE)
         {
@@ -170,12 +170,16 @@ Pacman.prototype.eatDot = function(pacman, key) {
     this.game.score += 100;
     this.game.numKeys --;
     this.game.gameSound.playPickupKey();
+
     if (this.game.numKeys > 0)
         this.game.keys.getChildAt(4 - this.game.numKeys).revive();
-    if (this.game.numKeys === 2) {
+
+    if (this.game.numKeys === 3) {
+        this.game.treasure.children[0].revive();
         this.game.treasure.children[0].play('unlock');
     }
-    if (this.game.numKeys === 0) {
+    if (this.game.numKeys === 1) {
+        this.game.treasure.children[1].revive();
         this.game.treasure.children[1].play('unlock');
     }
 };
@@ -192,17 +196,18 @@ Pacman.prototype.eatPill = function(pacman, pill) {
 };
 
 Pacman.prototype.pickTreasure = function(pacman, treasure) {
-
     var i = this.game.treasure.getIndex(treasure);
-    if (i === 0 && this.game.numKeys <= 2)
+    if (i === 0 && this.game.numKeys <= 3)
     {
         treasure.kill();
         this.game.score += 200;
+        this.game.gameSound.playTreasurePick();
     }
-    if (i === 1 && this.game.numKeys === 0)
+    if (i === 1 && this.game.numKeys <= 1)
     {
         treasure.kill();
         this.game.score += 200;
+        this.game.gameSound.playTreasurePick();
     }
 };
 

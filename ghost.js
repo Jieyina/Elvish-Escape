@@ -44,25 +44,15 @@ var Ghost = function(game, key, name, startPos, startDir, scatterDes, returnDes,
     this.ghost = this.game.add.sprite((startPos.x * this.gridsize) + this.gridsize/2, (startPos.y * this.gridsize) + this.gridsize/2, key, 0);
     this.ghost.name = this.name;
     this.ghost.anchor.set(0.5);
-    /*
-    this.ghost.animations.add(Phaser.LEFT, [offsetGhost], 0, false);
-    this.ghost.animations.add(Phaser.UP, [offsetGhost+1], 0, false);
-    this.ghost.animations.add(Phaser.DOWN, [offsetGhost+2], 0, false);
-    this.ghost.animations.add(Phaser.RIGHT, [offsetGhost+3], 0, false);
-    this.ghost.animations.add("frightened", [16, 17], 10, true);
-    this.ghost.animations.add(Phaser.RIGHT+20, [20], 0, false);
-    this.ghost.animations.add(Phaser.LEFT+20, [21], 0, false);
-    this.ghost.animations.add(Phaser.UP+20, [22], 0, false);
-    this.ghost.animations.add(Phaser.DOWN+20, [23], 0, false);
-    */
-    this.ghost.animations.add("left", [24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35], 15, true);
-    this.ghost.animations.add("right", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], 15, true);
-    this.ghost.animations.add("frightened left", [36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], 15, true);
-    this.ghost.animations.add("frightened right", [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23], 15, true);
+
+    this.ghost.animations.add("left", [16, 17, 18, 19, 20, 21, 22, 23], 15, true);
+    this.ghost.animations.add("right", [0, 1, 2, 3, 4, 5, 6, 7], 15, true);
+    this.ghost.animations.add("frightened left", [24, 25, 26, 27, 28, 29, 30, 31], 15, true);
+    this.ghost.animations.add("frightened right", [8, 9, 10, 11, 12, 13, 14, 15], 15, true);
     //this.ghost.play(startDir);
 
     this.game.physics.arcade.enable(this.ghost);
-    this.ghost.body.setSize(26, 26, 2, 0);
+    this.ghost.body.setSize(32, 32, 0, 0);
 
     this.move(startDir);
 };
@@ -513,29 +503,30 @@ Ghost.prototype = {
         }
 
         if (dir === Phaser.LEFT || dir === Phaser.UP) speed = -speed;
-        if (dir === Phaser.LEFT && !this.game.isPaused) {
+
+        if (dir === Phaser.LEFT && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME) {
             this.ghost.animations.play("left");
-        } else if (dir === Phaser.RIGHT && !this.game.isPaused) {
+        } else if (dir === Phaser.RIGHT && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME) {
             this.ghost.animations.play("right");
-        } else if (dir === Phaser.UP && !this.game.isPaused && this.lastDirection === Phaser.LEFT) {
+        } else if (dir === Phaser.UP && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME && this.lastDirection === Phaser.LEFT) {
             this.ghost.animations.play("left");
-        } else if (dir === Phaser.UP && !this.game.isPaused && this.lastDirection === Phaser.RIGHT) {
+        } else if (dir === Phaser.UP && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME && this.lastDirection === Phaser.RIGHT) {
             this.ghost.animations.play("right");
-        } else if (dir === Phaser.DOWN && !this.game.isPaused && this.lastDirection === Phaser.LEFT) {
+        } else if (dir === Phaser.DOWN && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME && this.lastDirection === Phaser.LEFT) {
             this.ghost.animations.play("left");
-        } else if (dir === Phaser.DOWN && !this.game.isPaused && this.lastDirection === Phaser.RIGHT) {
+        } else if (dir === Phaser.DOWN && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME && this.lastDirection === Phaser.RIGHT) {
             this.ghost.animations.play("right");
-        } else if (dir === Phaser.LEFT && this.mode === this.RANDOM) {
+        } else if (dir === Phaser.LEFT && (this.mode === this.RANDOM || this.mode === this.RETURNING_HOME)) {
             this.ghost.animations.play("frightened left");
-        } else if (dir === Phaser.RIGHT && this.mode === this.RANDOM) {
+        } else if (dir === Phaser.RIGHT && (this.mode === this.RANDOM || this.mode === this.RETURNING_HOME)) {
             this.ghost.animations.play("frightened right");
-        } else if (dir === Phaser.UP && this.mode === this.RANDOM && this.lastDirection === Phaser.LEFT) {
+        } else if (dir === Phaser.UP && (this.mode === this.RANDOM || this.mode === this.RETURNING_HOME) && this.lastDirection === Phaser.LEFT) {
             this.ghost.animations.play("frightened left");
-        } else if (dir === Phaser.UP && this.mode === this.RANDOM && this.lastDirection === Phaser.RIGHT) {
+        } else if (dir === Phaser.UP && (this.mode === this.RANDOM || this.mode === this.RETURNING_HOME) && this.lastDirection === Phaser.RIGHT) {
             this.ghost.animations.play("frightened right");
-        } else if (dir === Phaser.DOWN && this.mode === this.RANDOM && this.lastDirection === Phaser.LEFT) {
+        } else if (dir === Phaser.DOWN && (this.mode === this.RANDOM || this.mode === this.RETURNING_HOME) && this.lastDirection === Phaser.LEFT) {
             this.ghost.animations.play("frightened left");
-        } else if (dir === Phaser.DOWN && this.mode === this.RANDOM && this.lastDirection === Phaser.RIGHT) {
+        } else if (dir === Phaser.DOWN && (this.mode === this.RANDOM || this.mode === this.RETURNING_HOME) && this.lastDirection === Phaser.RIGHT) {
             this.ghost.animations.play("frightened right");
         }
         if (dir === Phaser.LEFT || dir === Phaser.RIGHT) {

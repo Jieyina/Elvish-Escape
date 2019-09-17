@@ -11,7 +11,7 @@
   <component name="ProjectId" id="1QkXbTrbrAVECYwQO472jwoiKNz" />
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../state" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -44,6 +44,7 @@
       <workItem from="1568343644212" duration="1171000" />
       <workItem from="1568664420723" duration="2617000" />
       <workItem from="1568683890514" duration="1861000" />
+      <workItem from="1568686619279" duration="16810000" />
     </task>
     <servers />
   </component>

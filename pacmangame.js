@@ -80,7 +80,7 @@ PacmanGame.prototype = {
         switch (this.level)
         {
             case 1:
-                this.pacPos = {x:8, y:5};
+                this.pacPos = {x:8, y:13};
                 this.ghostSpeed = 112;
                 this.ghostScatterSpeed = 105;
                 this.ghostFrightenedSpeed = 75;
@@ -128,7 +128,7 @@ PacmanGame.prototype = {
                 this.ghostFrightenedSpeed = 75;
                 this.cruiseSpeed = 120;
                 this.ElroySpeed = 128;
-                this.goalPos = {x: 8, y:11};
+                this.goalPos = {x:8, y:3};
                 this.blinkyPos = {x:8, y:12};
                 this.blinkyScatterPos = {x:1, y:1};
                 this.pinkyPos = {x:8, y:14};
@@ -139,7 +139,7 @@ PacmanGame.prototype = {
                 this.clydeScatterPos = {x:15, y:17};
                 this.returnDes = {x:8, y:14};
                 this.exitDes = {x:8, y:12};
-                this.safetile = [13, 14, 15, 23, 25, 33, 34, 35, 24, 81, 82, 61, 71, 85, 86];
+                this.safetile = [13, 14, 15, 23, 25, 33, 34, 35, 24, 81, 82, 61, 71];
                 break;
         }
     },
@@ -286,7 +286,7 @@ PacmanGame.prototype = {
         this.map.createFromTiles(88, -1, 'treasure', this.item, this.treasure);
         this.treasure.forEach(function(child) {
             child.animations.add('unlock', [0, 1, 2, 3, 4, 5], 8, false);
-            child.animations.add('lock', [0], 8, true);}, this);
+            child.kill();}, this);
 
         //  Pacman should collide with everything except the safe tile
         this.map.setCollisionByExclusion(this.safetile, true, this.layer);
