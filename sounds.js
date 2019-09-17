@@ -1,15 +1,5 @@
 var Sounds = function(game) {
     this.game = game;
-
-    this.bgm;
-    this.bgm_attack;
-    
-    this.player_slash;
-    this.player_death;
-    this.player_pickup_key;
-    
-    this.enemy_death;
-    this.level_complete;
 };
 
 Sounds.prototype.loadAllSounds = function() {

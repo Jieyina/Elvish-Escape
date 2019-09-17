@@ -1,19 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <title>Phaser Pacman clone</title>
-    <meta charset="utf-8">
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #000;
-            color: #fff;
-            text-align: center;
-            line-height: 10px;
-            font-size: 14px;
-        }
-    </style>
+    <title>Kaba Kaba</title>
     <script src="phaser.min.js"></script>
 </head>
 <body>
@@ -22,5 +10,18 @@
     <script src="sounds.js"></script>
     <script src="pacmangame.js"></script>
     <script src="sounds.js"></script>
+    <script src="preload.js"></script>
+    <script src="gametitle.js"></script>
+    <script src="boot.js"></script>
+    <script>
+        (function() {
+            var game = new Phaser.Game(544, 608, Phaser.AUTO, "game");
+            game.state.add("Boot",boot);
+            game.state.add("Preload",preload);
+            game.state.add("GameTitle",gameTitle);
+            game.state.add("TheGame",PacmanGame);
+            game.state.start("Boot");
+        }) ();
+    </script>
 </body>
 </html>

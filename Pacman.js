@@ -15,7 +15,7 @@ var Pacman = function(game, key, startPos) {
     this.marker = new Phaser.Point();
     this.turnPoint = new Phaser.Point();
     this.threshold = 6;
-    this.offsetX = 2;
+    this.offsetX = 0;
     this.offsetY = 0;
 
     this.directions = [ null, null, null, null, null ];
@@ -37,7 +37,7 @@ var Pacman = function(game, key, startPos) {
     // this.sprite.animations.add("death", [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], 10, false);
     
     this.game.physics.arcade.enable(this.sprite);
-    this.sprite.body.setSize(26, 26, this.offsetX, this.offsetY);
+    this.sprite.body.setSize(32, 32, this.offsetX, this.offsetY);
     
     this.sprite.play('munch');
     this.move(Phaser.LEFT);
@@ -92,10 +92,16 @@ Pacman.prototype.update = function() {
         this.marker.y = this.game.math.snapToFloor(Math.floor(this.sprite.y), this.gridsize) / this.gridsize;
 
         if (this.marker.x < 0) {
-            this.sprite.x = this.game.map.widthInPixels - 1;
+            this.sprite.x = this.game.map.widthInPixels - 2;
         }
-        if (this.marker.x >= this.game.map.width) {
+        if (this.marker.x >= this.game.map.widthInPixels) {
             this.sprite.x = 1;
+        }
+        if (this.marker.y < 0) {
+            this.sprite.y = this.game.map.heightInPixels - 2;
+        }
+        if (this.marker.y >= this.game.map.heightInPixels) {
+            this.sprite.y = 1;
         }
 
         //  Update our grid sensors
@@ -163,7 +169,7 @@ Pacman.prototype.eatDot = function(pacman, key) {
     
     this.game.score += 100;
     this.game.numKeys --;
-    this.game.sound.playPickupKey();
+    this.game.gameSound.playPickupKey();
     if (this.game.numKeys > 0)
         this.game.keys.getChildAt(4 - this.game.numKeys).revive();
     if (this.game.numKeys === 2) {
@@ -181,7 +187,7 @@ Pacman.prototype.eatPill = function(pacman, pill) {
     this.game.numPills --;
 
     this.sprite.play('armed');
-    this.game.sound.playBgmAttack();
+    this.game.gameSound.playBgmAttack();
     this.game.enterFrightenedMode();
 };
 

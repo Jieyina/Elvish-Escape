@@ -11,7 +11,12 @@
   <component name="ProjectId" id="1QkXbTrbrAVECYwQO472jwoiKNz" />
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="F:/Pacman" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\najie\Downloads\Pac-Man-Meets-Dungeons-Dev" />
+    </key>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -37,6 +42,8 @@
       <updated>1568315638188</updated>
       <workItem from="1568315639290" duration="1727000" />
       <workItem from="1568343644212" duration="1171000" />
+      <workItem from="1568664420723" duration="2617000" />
+      <workItem from="1568683890514" duration="1861000" />
     </task>
     <servers />
   </component>

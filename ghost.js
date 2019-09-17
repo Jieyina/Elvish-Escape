@@ -83,6 +83,12 @@ Ghost.prototype = {
         if (this.ghost.x >= this.game.map.widthInPixels - 1) {
             this.ghost.x = 1;
         }
+        if (this.ghost.y < 0) {
+            this.ghost.y = this.game.map.heightInPixels - 2;
+        }
+        if (this.ghost.y >= this.game.map.heightInPixels - 1) {
+            this.ghost.y = 1;
+        }
         
         if (this.game.math.fuzzyEqual((x * this.gridsize) + (this.gridsize /2), this.ghost.x, this.threshold) &&
            this.game.math.fuzzyEqual((y * this.gridsize) + (this.gridsize /2), this.ghost.y, this.threshold)) {
@@ -103,18 +109,29 @@ Ghost.prototype = {
             console.log(this.name, possibleExits);
             switch (this.mode) {
                 case this.RANDOM:
-                    if (this.turnTimer < this.game.time.time && (possibleExits.length > 1 || !canContinue)) {
-                        var select = Math.floor(Math.random() * possibleExits.length);
-                        var newDirection = possibleExits[select];
+                    if (this.turnTimer < this.game.time.time) {
+                        if (possibleExits.length < 1)
+                        {
+                            this.ghost.x = this.turnPoint.x;
+                            this.ghost.y = this.turnPoint.y;
 
-                        // snap to grid exact position before turning
-                        this.ghost.x = this.turnPoint.x;
-                        this.ghost.y = this.turnPoint.y;
+                            this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
+                            this.lastDirection = this.currentDir;
+                            this.move(this.opposites[this.currentDir]);
+                        }
+                        else if (possibleExits.length > 1 || !canContinue)
+                        {
+                            var select = Math.floor(Math.random() * possibleExits.length);
+                            var newDirection = possibleExits[select];
 
-                        this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
-                        this.lastDirection = this.currentDir;
-                        this.move(newDirection);
+                            // snap to grid exact position before turning
+                            this.ghost.x = this.turnPoint.x;
+                            this.ghost.y = this.turnPoint.y;
 
+                            this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
+                            this.lastDirection = this.currentDir;
+                            this.move(newDirection);
+                        }
                         this.turnTimer = this.game.time.time + this.TURNING_COOLDOWN;
                     }
                     break;
@@ -132,7 +149,7 @@ Ghost.prototype = {
                     if (this.turnTimer < this.game.time.time) {
                         var distanceToObj = 999999;
                         var direction, decision, bestDecision;
-                        if (possibleExits === [])
+                        if (possibleExits.length < 1)
                         {
                             this.ghost.x = this.turnPoint.x;
                             this.ghost.y = this.turnPoint.y;
@@ -141,7 +158,7 @@ Ghost.prototype = {
                             this.lastDirection = this.currentDir;
                             this.move(this.opposites[this.currentDir]);
                         }
-                        else if (possibleExits.length >= 1)
+                        else
                         {
                             for (q=0; q<possibleExits.length; q++) {
                                 direction = possibleExits[q];

@@ -1,173 +1,268 @@
-var game = new Phaser.Game(1216/2, 1344/2, Phaser.AUTO, "game");
-
-var PacmanGame = function (game) {    
-    this.map = null;
-    this.layer = null;
-    this.item = null;
-    
-    this.numKeys = 4;
-    this.TOTAL_KEYS = 0;
-    this.score = 0;
-    this.scoreText = null;
-
-    this.ghostSpeed = 112;
-    this.ghostScatterSpeed = 105;
-    this.ghostFrightenedSpeed = 75;
-    this.cruiseSpeed = 120;
-    this.ElroySpeed = 128;
-    
-    this.pacman = null; 
-    this.clyde = null;
-    this.pinky = null;
-    this.inky = null;
-    this.blinky = null;
-    this.isInkyOut = false;
-    this.isClydeOut = false;
-    this.gameOver = false;
-    this.gameWin = false;
-    this.ghosts = [];
-    this.livesImage = [];
-    this.goalPos = {x: 8, y:11};
-
-    this.safetile = [14, 51, 41, 24, 86, 85, 23, 25, 34, 72];
-    this.gridsize = 32;
-    this.threshold = 3;
-
-    this.chest1Unlocked = false;
-    this.chest2Unlocked = false;
-    
-    /* this.SPECIAL_TILES = [
-        { x: 12, y: 11 },
-        { x: 15, y: 11 },
-        { x: 12, y: 23 },
-        { x: 15, y: 23 }
-    ]; */
-    
-    this.TIME_MODES = [
-        {
-            mode: "scatter",
-            time: 7000
-        },
-        {
-            mode: "chase",
-            time: 20000
-        },
-        {
-            mode: "scatter",
-            time: 7000
-        },
-        {
-            mode: "chase",
-            time: 20000
-        },
-        {
-            mode: "scatter",
-            time: 5000
-        },
-        {
-            mode: "chase",
-            time: 20000
-        },
-        {
-            mode: "scatter",
-            time: 5000
-        },
-        {
-            mode: "chase",
-            time: -1 // -1 = infinite
-        }
-    ];
-    this.changeModeTimer = 0;
-    this.remainingTime = 0;
-    this.currentMode = 0;
-    this.isPaused = false;
-    this.FRIGHTENED_MODE_TIME = 7000;
-    
-
-    this.DEBUG_ON = false;
-    this.KEY_COOLING_DOWN_TIME = 250;
-    this.lastKeyPressed = 0;
-    
+var PacmanGame = function (game) {
+    this.life = 3;
+    this.level = 1;
     this.game = game;
-    this.sounds = null;
-    this.killCombo = 0;
+    this.gameSound = new Sounds(this);
+
 };
 
 PacmanGame.prototype = {
-
-    init: function () {
-        if (this.game.sound.context.state === 'suspended') {
-            this.game.sound.context.resume();
+    init: function (score, life) {
+        this.map = null;
+        this.layer = null;
+        this.item = null;
+        this.numKeys = 4;
+        this.TOTAL_KEYS = 0;
+        if (this.level > 1)
+        {
+            this.score = score;
+            this.life = life;
+        } else {
+            this.score = 0;
         }
-        this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-        this.scale.pageAlignHorizontally = true;
-        // this.scale.pageAlignVertically = true;
+        this.pacman = null;
+        this.clyde = null;
+        this.pinky = null;
+        this.inky = null;
+        this.blinky = null;
+        this.isInkyOut = false;
+        this.isClydeOut = false;
+        this.gameOver = false;
+        this.gameWin = false;
+        this.ghosts = [];
+        this.livesImage = [];
+        this.gridsize = 32;
+        this.threshold = 3;
+        this.killCombo = 0;
+        this.TIME_MODES = [
+            {
+                mode: "scatter",
+                time: 7000
+            },
+            {
+                mode: "chase",
+                time: 20000
+            },
+            {
+                mode: "scatter",
+                time: 7000
+            },
+            {
+                mode: "chase",
+                time: 20000
+            },
+            {
+                mode: "scatter",
+                time: 5000
+            },
+            {
+                mode: "chase",
+                time: 20000
+            },
+            {
+                mode: "scatter",
+                time: 5000
+            },
+            {
+                mode: "chase",
+                time: -1 // -1 = infinite
+            }
+        ];
+        this.changeModeTimer = 0;
+        this.remainingTime = 0;
+        this.currentMode = 0;
+        this.isPaused = false;
+        this.FRIGHTENED_MODE_TIME = 7000;
+        this.DEBUG_ON = false;
+        this.KEY_COOLING_DOWN_TIME = 250;
+        this.lastKeyPressed = 0;
 
-        Phaser.Canvas.setImageRenderingCrisp(this.game.canvas); // full retro mode, i guess ;)
+        switch (this.level)
+        {
+            case 1:
+                this.pacPos = {x:8, y:5};
+                this.ghostSpeed = 112;
+                this.ghostScatterSpeed = 105;
+                this.ghostFrightenedSpeed = 75;
+                this.cruiseSpeed = 120;
+                this.ElroySpeed = 128;
+                this.goalPos = {x: 8, y:12};
+                this.blinkyPos = {x:8, y:7};
+                this.blinkyScatterPos = {x:1, y:1};
+                this.pinkyPos = {x:8, y:9};
+                this.pinkyScatterPos = {x:15, y:1};
+                this.inkyPos = {x:7, y:9};
+                this.inkyScatterPos = {x:15, y:17};
+                this.clydePos = {x:9, y:9};
+                this.clydeScatterPos = {x:1, y:17};
+                this.returnDes = {x:8, y:9};
+                this.exitDes = {x:8, y:7};
+                this.safetile = [13, 14, 15, 23, 25, 33, 34, 35, 24, 83, 84, 41, 51, 72, 78];
+                break;
 
-        this.physics.startSystem(Phaser.Physics.ARCADE);
-        this.sound = new Sounds(this);
+            case 2:
+                this.pacPos = {x:8, y:13};
+                this.ghostSpeed = 112;
+                this.ghostScatterSpeed = 105;
+                this.ghostFrightenedSpeed = 75;
+                this.cruiseSpeed = 120;
+                this.ElroySpeed = 128;
+                this.goalPos = {x: 8, y:11};
+                this.blinkyPos = {x:8, y:3};
+                this.blinkyScatterPos = {x:2, y:1};
+                this.pinkyPos = {x:8, y:1};
+                this.pinkyScatterPos = {x:14, y:1};
+                this.inkyPos = {x:7, y:1};
+                this.inkyScatterPos = {x:14, y:17};
+                this.clydePos = {x:9, y:1};
+                this.clydeScatterPos = {x:2, y:17};
+                this.returnDes = {x:8, y:1};
+                this.exitDes = {x:8, y:3};
+                this.safetile = [14, 51, 41, 24, 86, 85, 23, 25, 34, 72];
+                break;
+
+            case 3:
+                this.pacPos = {x:8, y:10};
+                this.ghostSpeed = 112;
+                this.ghostScatterSpeed = 105;
+                this.ghostFrightenedSpeed = 75;
+                this.cruiseSpeed = 120;
+                this.ElroySpeed = 128;
+                this.goalPos = {x: 8, y:11};
+                this.blinkyPos = {x:8, y:12};
+                this.blinkyScatterPos = {x:1, y:1};
+                this.pinkyPos = {x:8, y:14};
+                this.pinkyScatterPos = {x:15, y:1};
+                this.inkyPos = {x:7, y:14};
+                this.inkyScatterPos = {x:1, y:17};
+                this.clydePos = {x:9, y:14};
+                this.clydeScatterPos = {x:15, y:17};
+                this.returnDes = {x:8, y:14};
+                this.exitDes = {x:8, y:12};
+                this.safetile = [13, 14, 15, 23, 25, 33, 34, 35, 24, 81, 82, 61, 71, 85, 86];
+                break;
+        }
     },
 
     preload: function () {
-        this.load.image('tiles', 'assets/levels/Tile_Level2.png');
-        this.load.image("lifecounter", "assets/heart32.png");
-        this.load.spritesheet('key_yellow', 'assets/pickups/yellow-key-sparkle.png', 32, 32);
-        this.load.spritesheet('key_red', 'assets/pickups/red-key-sparkle.png', 32, 32);
-        this.load.spritesheet('key_blue', 'assets/pickups/blue-key-sparkle.png', 32, 32);
-        this.load.spritesheet('key_green', 'assets/pickups/green-key-sparkle.png', 32, 32);
-        this.load.image('sword', 'assets/pickups/sword-big.png');
-        this.load.tilemap('map', 'assets/levels/level2.json', null, Phaser.Tilemap.TILED_JSON);
-        this.load.spritesheet('hero', 'assets/hero/elf.png', 32, 32);
-        this.load.spritesheet('monster1', 'assets/monsters/zombie_red_sheet.png', 32, 32);
-        this.load.spritesheet('monster2', 'assets/monsters/zombie_pink_sheet.png', 32, 32);
-        this.load.spritesheet('monster3', 'assets/monsters/zombie_blue_sheet.png', 32, 32);
-        this.load.spritesheet('monster4', 'assets/monsters/zombie_orange_sheet.png', 32, 32);
-        this.load.spritesheet('treasure', 'assets/pickups/treasure.png', 32, 32);
-        this.load.spritesheet('torch', 'assets/props/torch.png', 32, 32);
-        this.load.spritesheet('grass', 'assets/props/grass.png', 32, 32);
-        this.sound.loadAllSounds();
+        this.gameSound.loadAllSounds();
     },
 
     create: function () {
-        this.sound.createAllInstances();
-        this.map = this.add.tilemap('map');
-        this.map.addTilesetImage('Tile1', 'tiles');
+        this.gameSound.createAllInstances();
 
-        this.layer = this.map.createLayer('ground');
-        this.grass = this.map.createLayer('grass');
-        this.torch = this.map.createLayer('torch');
+        switch (this.level)
+        {
+            case 1:
+                this.map = this.add.tilemap('map1');
+                this.map.addTilesetImage('Tile_Level1', 'tiles1');
+                this.layer = this.map.createLayer('ground');
+                this.torch = this.map.createLayer('torch');
 
-        this.torchUp = this.add.group();
-        this.map.createFromTiles(89, -1, 'torch', this.torch, this.torchUp);
-        this.torchUp.forEach(function(child) {
-            child.animations.add('flame', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], 15, true);
-            child.play('flame');}, this);
+                this.torchUp = this.add.group();
+                this.map.createFromTiles(89, -1, 'torch', this.torch, this.torchUp);
+                this.torchUp.forEach(function(child) {
+                    child.animations.add('flame', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], 15, true);
+                    child.play('flame');}, this);
 
-        this.torchDown = this.add.group();
-        this.map.createFromTiles(60, -1, 'torch', this.torch, this.torchDown);
-        this.torchDown.forEach(function(child) {
-            child.animations.add('flame', [24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35], 15, true);
-            child.play('flame');}, this);
+                this.torchDown = this.add.group();
+                this.map.createFromTiles(60, -1, 'torch', this.torch, this.torchDown);
+                this.torchDown.forEach(function(child) {
+                    child.animations.add('flame', [24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35], 15, true);
+                    child.play('flame');}, this);
 
-        this.torchLeft = this.add.group();
-        this.map.createFromTiles(70, -1, 'torch', this.torch, this.torchLeft);
-        this.torchLeft.forEach(function(child) {
-            child.animations.add('flame', [36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], 15, true);
-            child.play('flame');}, this);
+                this.torchLeft = this.add.group();
+                this.map.createFromTiles(70, -1, 'torch', this.torch, this.torchLeft);
+                this.torchLeft.forEach(function(child) {
+                    child.animations.add('flame', [36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], 15, true);
+                    child.play('flame');}, this);
 
-        this.torchRight = this.add.group();
-        this.map.createFromTiles(80, -1, 'torch', this.torch, this.torchRight);
-        this.torchRight.forEach(function(child) {
-            child.animations.add('flame', [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23], 15, true);
-            child.play('flame');}, this);
+                this.torchRight = this.add.group();
+                this.map.createFromTiles(80, -1, 'torch', this.torch, this.torchRight);
+                this.torchRight.forEach(function(child) {
+                    child.animations.add('flame', [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23], 15, true);
+                    child.play('flame');}, this);
+                break;
 
-        this.grasses = this.add.group();
-        this.map.createFromTiles(90, -1, 'grass', this.grass, this.grasses);
-        this.grasses.forEach(function(child) {
-            child.animations.add('wave', [0, 1, 2, 3, 4, 5], 15, true);
-            child.play('wave');}, this);
+            case 2:
+                this.map = this.add.tilemap('map2');
+                this.map.addTilesetImage('Tile_Level2', 'tiles2');
 
+                this.layer = this.map.createLayer('ground');
+                this.grass = this.map.createLayer('grass');
+                this.torch = this.map.createLayer('torch');
+
+                this.torchUp = this.add.group();
+                this.map.createFromTiles(89, -1, 'torch', this.torch, this.torchUp);
+                this.torchUp.forEach(function(child) {
+                    child.animations.add('flame', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], 15, true);
+                    child.play('flame');}, this);
+
+                this.torchDown = this.add.group();
+                this.map.createFromTiles(60, -1, 'torch', this.torch, this.torchDown);
+                this.torchDown.forEach(function(child) {
+                    child.animations.add('flame', [24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35], 15, true);
+                    child.play('flame');}, this);
+
+                this.torchLeft = this.add.group();
+                this.map.createFromTiles(70, -1, 'torch', this.torch, this.torchLeft);
+                this.torchLeft.forEach(function(child) {
+                    child.animations.add('flame', [36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], 15, true);
+                    child.play('flame');}, this);
+
+                this.torchRight = this.add.group();
+                this.map.createFromTiles(80, -1, 'torch', this.torch, this.torchRight);
+                this.torchRight.forEach(function(child) {
+                    child.animations.add('flame', [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23], 15, true);
+                    child.play('flame');}, this);
+
+                this.grasses = this.add.group();
+                this.map.createFromTiles(90, -1, 'grass', this.grass, this.grasses);
+                this.grasses.forEach(function(child) {
+                    child.animations.add('wave', [0, 1, 2, 3, 4, 5], 15, true);
+                    child.play('wave');}, this);
+                break;
+
+            case 3:
+                this.map = this.add.tilemap('map3');
+                this.map.addTilesetImage('Tile_Level3', 'tiles3');
+                this.layer = this.map.createLayer('ground');
+                /*
+                this.grass = this.map.createLayer('grass');
+                this.torch = this.map.createLayer('torch');
+
+                this.torchUp = this.add.group();
+                this.map.createFromTiles(89, -1, 'torch', this.torch, this.torchUp);
+                this.torchUp.forEach(function(child) {
+                    child.animations.add('flame', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], 15, true);
+                    child.play('flame');}, this);
+
+                this.torchDown = this.add.group();
+                this.map.createFromTiles(60, -1, 'torch', this.torch, this.torchDown);
+                this.torchDown.forEach(function(child) {
+                    child.animations.add('flame', [24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35], 15, true);
+                    child.play('flame');}, this);
+
+                this.torchLeft = this.add.group();
+                this.map.createFromTiles(70, -1, 'torch', this.torch, this.torchLeft);
+                this.torchLeft.forEach(function(child) {
+                    child.animations.add('flame', [36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], 15, true);
+                    child.play('flame');}, this);
+
+                this.torchRight = this.add.group();
+                this.map.createFromTiles(80, -1, 'torch', this.torch, this.torchRight);
+                this.torchRight.forEach(function(child) {
+                    child.animations.add('flame', [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23], 15, true);
+                    child.play('flame');}, this);
+
+                this.grasses = this.add.group();
+                this.map.createFromTiles(90, -1, 'grass', this.grass, this.grasses);
+                this.grasses.forEach(function(child) {
+                    child.animations.add('wave', [0, 1, 2, 3, 4, 5], 15, true);
+                    child.play('wave');}, this);
+                 */
+                break;
+        }
 
         this.item = this.map.createLayer('item');
         this.keys = this.add.physicsGroup();
@@ -198,44 +293,40 @@ PacmanGame.prototype = {
         this.map.setCollisionByExclusion([38], true, this.item);
 
 		// Our hero
-        this.pacman = new Pacman(this, "hero", {x:8, y:13});
-        for (var i =  0; i < this.pacman.life; i++) {
+        this.pacman = new Pacman(this, "hero", this.pacPos);
+        for (var i =  0; i < this.life; i++) {
             this.livesImage.push(this.add.image(448 + (i * 32), 575, 'lifecounter'));
         }
 
+        this.blinky = new Ghost(this, "monster1", "blinky", this.blinkyPos, Phaser.LEFT, this.blinkyScatterPos, this.returnDes, this.exitDes);
+        this.pinky = new Ghost(this, "monster2", "pinky", this.pinkyPos, Phaser.RIGHT, this.pinkyScatterPos, this.returnDes, this.exitDes);
+        this.inky = new Ghost(this, "monster3", "inky", this.inkyPos, Phaser.RIGHT, this.inkyScatterPos, this.returnDes, this.exitDes);
+        this.clyde = new Ghost(this, "monster4", "clyde", this.clydePos, Phaser.LEFT, this.clydeScatterPos, this.returnDes, this.exitDes);
+        this.ghosts.push(this.clyde, this.pinky, this.inky, this.blinky);
+
         // Score and debug texts
-        this.scoreText = this.game.add.text(20, 272, "Score: " + this.score, { fontSize: "24px", fill: "#fff" });
-        this.winText = this.game.add.text(230, 140, "", { fontSize: "36px", fill: "#fff" });
-        this.loseText = this.game.add.text(230, 140, "", { fontSize: "36px", fill: "#fff" });
-        this.loseHint = this.game.add.text(190, 230, "", { fontSize: "24px", fill: "#fff" });
-        
+        this.scoreText = this.game.add.text(35, 3, "Score: " + this.score, { fontSize: "24px", fill: "#fff" });
+        this.winText = this.game.add.text(190, 140, "", { fontSize: "36px", fill: "#fff" });
+        this.winHint = this.game.add.text(150, 230, "", { fontSize: "24px", fill: "#fff" });
+        this.loseText = this.game.add.text(190, 140, "", { fontSize: "36px", fill: "#fff" });
+        this.loseHint = this.game.add.text(155, 230, "", { fontSize: "24px", fill: "#fff" });
         this.cursors = this.game.input.keyboard.createCursorKeys();
         this.cursors["d"] = this.game.input.keyboard.addKey(Phaser.Keyboard.D);
         this.cursors["r"] = this.game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
-        //this.game.time.events.add(1250, this.sendExitOrder, this);
-        //this.game.time.events.add(7000, this.sendAttackOrder, this);
         
         this.changeModeTimer = this.time.time + this.TIME_MODES[this.currentMode].time;
-        
-        // Ghosts
-        // debugger;
-        this.blinky = new Ghost(this, "monster1", "blinky", {x:8, y:3}, Phaser.LEFT, {x:2, y:1}, {x:8, y:1}, {x:8, y:3});
-        this.pinky = new Ghost(this, "monster2", "pinky", {x:8, y:1}, Phaser.RIGHT, {x:14, y:1}, {x:8, y:1}, {x:8, y:3});
-        this.inky = new Ghost(this, "monster3", "inky", {x:7, y:1}, Phaser.RIGHT, {x:14, y:17}, {x:8, y:1}, {x:8, y:3});
-        this.clyde = new Ghost(this, "monster4", "clyde", {x:9, y:1}, Phaser.LEFT, {x:2, y:17}, {x:8, y:1}, {x:8, y:3});
-        this.ghosts.push(this.clyde, this.pinky, this.inky, this.blinky);
-        
         this.gimeMeExitOrder(this.pinky);
-        this.sound.playBgm();
-        console.log("bgm play")
+        this.gameSound.playBgm();
     },
 
     update: function () {
         this.scoreText.text = "Score: " + this.score;
         if (this.gameWin === true) {
             this.winText.text = "You Win!";
+            this.winHint.text = "Press Enter to continue.";
         } else {
             this.winText.text = "";
+            this.winHint.text = "";
         }
         if (this.gameOver === true) {
             this.loseText.text = "You Lose!";
@@ -281,7 +372,7 @@ PacmanGame.prototype = {
                 } else {
                     this.sendScatterOrder();
                 }
-                this.sound.playBgm();
+                this.gameSound.playBgm();
                 this.killCombo = 0;
                 console.log("new mode:", this.TIME_MODES[this.currentMode].mode, this.TIME_MODES[this.currentMode].time);
             }
@@ -295,18 +386,29 @@ PacmanGame.prototype = {
 
         this.checkKeys();
         this.checkMouse();
-        
 
         if (this.score >= 6000) {
-            this.pacman.life++;
+            this.life++;
             this.score -= 6000;
-            if (this.pacman.life > 3) {
-                this.pacman.life = 3;
+            if (this.life > 3) {
+                this.life = 3;
             }
         }
 
-        if ((this.gameOver === true || this.gameWin === true) && this.cursors.r.isDown)
-            this.newGame();
+        if (this.gameOver === true && this.cursors.r.isDown)
+        {
+            this.level = 1;
+            this.game.state.restart();
+        }
+        if (this.gameWin === true && this.cursors.r.isDown)
+        {
+            this.level++;
+            if (this.level > 3) this.level = 3;
+            var score = this.score;
+            var life = this.life;
+            this.game.state.restart(true, false, score, life);
+        }
+
     },
     
     enterFrightenedMode: function() {
@@ -319,15 +421,6 @@ PacmanGame.prototype = {
         this.changeModeTimer = this.time.time + this.FRIGHTENED_MODE_TIME;
         this.isPaused = true;
     },
-    
-    /* isSpecialTile: function(tile) {
-        for (var q=0; q<this.SPECIAL_TILES.length; q++) {
-            if (tile.x === this.SPECIAL_TILES[q].x && tile.y === this.SPECIAL_TILES[q].y) {
-                return true;
-            } 
-        }
-        return false;
-    }, */
     
     updateGhosts: function() {
         for (var i=0; i<this.ghosts.length; i++) {
@@ -385,7 +478,7 @@ PacmanGame.prototype = {
     },
 
     updateLife: function() {
-        for (var i = this.pacman.life; i < 3; i++) {
+        for (var i = this.life; i < 3; i++) {
             var image = this.livesImage[i];
             if (image) {
                 image.alpha = 0;
@@ -426,7 +519,7 @@ PacmanGame.prototype = {
     dogEatsDog: function(pacman, ghost) {
         if (Phaser.Math.distance(pacman.x, pacman.y, ghost.x, ghost.y) < 25) {
             if (this[ghost.name].mode === this[ghost.name].RANDOM) {
-                this.sound.playKillEnemy();
+                this.gameSound.playKillEnemy();
                 this[ghost.name].mode = this[ghost.name].RETURNING_HOME;
                 this[ghost.name].ghostDestination = new Phaser.Point(14 * this.gridsize, 14 * this.gridsize);
                 switch(this.killCombo++) {
@@ -468,11 +561,11 @@ PacmanGame.prototype = {
 
     killPacman: function() {
         this.pacman.isDead = true;
-        this.pacman.life --;
-        this.sound.playPlayerDeath();
+        this.life --;
+        this.gameSound.playPlayerDeath();
         this.stopGhosts();
         this.game.time.events.add(1000, function() {
-            if(this.pacman.life <= 0) {
+            if(this.life <= 0) {
                 this.gameOver = true;
             }
             else {
@@ -492,12 +585,12 @@ PacmanGame.prototype = {
         this.score += 500;
         this.stopGhosts();
         this.pacman.move(Phaser.NONE);
-        this.sound.playLevelComplete();
+        this.gameSound.playLevelComplete();
     },
 
     newGame: function() {
         this.gameOver = false;
-        this.pacman.life=3;
+        this.life=3;
         this.score=0;
         this.currentMode = 0;
         this.changeModeTimer = this.time.time + this.TIME_MODES[this.currentMode].time;
@@ -514,7 +607,7 @@ PacmanGame.prototype = {
         this.treasure.callAll('play', null, 'lock');
         this.numKeys = 4;
         this.numPills = 2;
-        for (let i = 0; i < this.pacman.life; i++) {
+        for (let i = 0; i < this.life; i++) {
             let image = this.livesImage[i];
             if(image) {
                 image.alpha=1;
@@ -525,8 +618,6 @@ PacmanGame.prototype = {
         }
         this.gimeMeExitOrder(this.pinky);
         this.pacman.respawn();
-        this.sound.playBgm();
+        this.gameSound.playBgm();
     }
 };
-
-game.state.add('Game', PacmanGame, true);
