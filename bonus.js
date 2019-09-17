@@ -1,79 +1,24 @@
-var PacmanGame = function (game) {
-    this.life = 3;
-    this.level = 1;
+var Bonus = function (game) {
     this.game = game;
     this.gameSound = new Sounds(this);
 };
 
-PacmanGame.prototype = {
+Bonus.prototype = {
     init: function (score, life) {
         this.map = null;
         this.layer = null;
         this.item = null;
-        this.numKeys = 4;
-        this.TOTAL_KEYS = 0;
-        if (this.level > 1)
-        {
-            this.score = score;
-            this.life = life;
-        } else {
-            this.score = 0;
-            this.life = 3;
-        }
-        /*
-        this.score = 0;
-        this.life = 3;
-         */
+
+        this.score = score;
+        this.lastLife = life;
+
         this.pacman = null;
-        this.clyde = null;
-        this.pinky = null;
-        this.inky = null;
-        this.blinky = null;
-        this.isInkyOut = false;
-        this.isClydeOut = false;
         this.gameOver = false;
         this.gameWin = false;
         this.ghosts = [];
-        this.livesImage = [];
         this.gridsize = 32;
         this.threshold = 3;
         this.killCombo = 0;
-        this.lifeBack = 1;
-        this.treasureUnlocked = [];
-        this.TIME_MODES = [
-            {
-                mode: "scatter",
-                time: 7000
-            },
-            {
-                mode: "chase",
-                time: 20000
-            },
-            {
-                mode: "scatter",
-                time: 7000
-            },
-            {
-                mode: "chase",
-                time: 20000
-            },
-            {
-                mode: "scatter",
-                time: 5000
-            },
-            {
-                mode: "chase",
-                time: 20000
-            },
-            {
-                mode: "scatter",
-                time: 5000
-            },
-            {
-                mode: "chase",
-                time: -1 // -1 = infinite
-            }
-        ];
         this.changeModeTimer = 0;
         this.remainingTime = 0;
         this.currentMode = 0;
@@ -262,7 +207,7 @@ PacmanGame.prototype = {
         for (var i = 1; i < this.numKeys; i++) {
             this.keys.children[i].kill();
         }
-        
+
         this.pills = this.add.physicsGroup();
         this.numPills = this.map.createFromTiles(65, -1, "sword", this.item, this.pills);
 
@@ -285,7 +230,7 @@ PacmanGame.prototype = {
         this.map.setCollisionByExclusion(this.safetile, true, this.layer);
         this.map.setCollisionByExclusion([38], true, this.item);
 
-		// Our hero
+        // Our hero
         this.pacman = new Pacman(this, "hero", this.pacPos);
         for (var i =  0; i < this.life; i++) {
             this.livesImage.push(this.add.image(448 + (i * 32), 575, 'lifecounter'));
@@ -306,7 +251,7 @@ PacmanGame.prototype = {
         this.cursors = this.game.input.keyboard.createCursorKeys();
         this.cursors["d"] = this.game.input.keyboard.addKey(Phaser.Keyboard.D);
         this.cursors["r"] = this.game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
-        
+
         this.changeModeTimer = this.time.time + this.TIME_MODES[this.currentMode].time;
         this.gimeMeExitOrder(this.pinky);
         this.gameSound.playBgm();
@@ -328,7 +273,7 @@ PacmanGame.prototype = {
             this.loseText.text = "";
             this.loseHint.text = "";
         }
-        
+
         if (!this.pacman.isDead) {
             for (var i=0; i<this.ghosts.length; i++) {
                 if (this.ghosts[i].mode !== this.ghosts[i].RETURNING_HOME) {
@@ -340,7 +285,7 @@ PacmanGame.prototype = {
                 this.isInkyOut = true;
                 this.sendExitOrder(this.inky);
             }
-            
+
             if (this.TOTAL_KEYS - this.numKeys === 2 && !this.isClydeOut) {
                 this.isClydeOut = true;
                 this.sendExitOrder(this.clyde);
@@ -371,13 +316,14 @@ PacmanGame.prototype = {
             }
         }
 
-        this.checkKeys();
-        this.checkMouse();
-
         this.pacman.update();
-		this.updateGhosts();
+        this.updateLife();
+        this.updateGhosts();
         for (var i=0; i< this.ghosts.length; i++)
             console.log(this.ghosts[i].name, this.ghosts[i].currentDir, this.ghosts[i].mode);
+
+        this.checkKeys();
+        this.checkMouse();
 
         if (this.score > 6000 * this.lifeBack) {
             this.life++;
@@ -386,7 +332,6 @@ PacmanGame.prototype = {
             }
             this.lifeBack++;
         }
-        this.updateLife();
 
         if (this.gameOver === true && this.cursors.r.isDown)
         {
@@ -402,7 +347,7 @@ PacmanGame.prototype = {
             this.game.state.restart(true, false, this.score, this.life);
         }
     },
-    
+
     enterFrightenedMode: function() {
         if (!this.isPaused) {
             this.remainingTime = this.changeModeTimer - this.time.time;
@@ -410,13 +355,13 @@ PacmanGame.prototype = {
         this.changeModeTimer = this.time.time + this.FRIGHTENED_MODE_TIME;
         this.isPaused = true;
     },
-    
+
     updateGhosts: function() {
         for (var i=0; i<this.ghosts.length; i++) {
             this.ghosts[i].update();
         }
     },
-    
+
     render: function() {
         if (this.DEBUG_ON) {
             for (var i=0; i<this.ghosts.length; i++) {
@@ -448,18 +393,18 @@ PacmanGame.prototype = {
         }
 
     },
-    
+
     sendAttackOrder: function() {
         for (var i=0; i<this.ghosts.length; i++) {
             this.ghosts[i].attack();
         }
     },
-    
+
     sendExitOrder: function(ghost) {
         if (ghost.mode === ghost.AT_HOME)
             ghost.mode = ghost.EXIT_HOME;
     },
-    
+
     sendScatterOrder: function() {
         for (var i=0; i<this.ghosts.length; i++) {
             this.ghosts[i].scatter();
