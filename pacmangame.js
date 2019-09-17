@@ -18,6 +18,7 @@ PacmanGame.prototype = {
             this.life = life;
         } else {
             this.score = 0;
+            this.life = 3;
         }
         this.pacman = null;
         this.clyde = null;

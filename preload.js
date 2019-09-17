@@ -27,7 +27,7 @@ preload.prototype = {
 		this.game.load.spritesheet('torch', 'assets/props/torch.png', 32, 32);
 		this.game.load.spritesheet('grass', 'assets/props/grass.png', 32, 32);
 	},
-  	create: function(){
+  	create: function() {
 		this.game.state.start("GameTitle");
 	}
 };
