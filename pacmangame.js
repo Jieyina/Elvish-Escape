@@ -144,7 +144,7 @@ PacmanGame.prototype = {
         }
     },
 
-    preload: function () {
+    preload: function() {
         this.gameSound.loadAllSounds();
     },
 
@@ -398,6 +398,7 @@ PacmanGame.prototype = {
         if (this.gameOver === true && this.cursors.r.isDown)
         {
             this.level = 1;
+            this.gameSound.clear();
             this.game.state.restart();
         }
         if (this.gameWin === true && this.cursors.r.isDown)
@@ -406,6 +407,7 @@ PacmanGame.prototype = {
             if (this.level > 3) this.level = 3;
             var score = this.score;
             var life = this.life;
+            this.gameSound.clear();
             this.game.state.restart(true, false, score, life);
         }
 
@@ -495,6 +497,7 @@ PacmanGame.prototype = {
             this.ghosts[i].respawn();
         }
         this.pacman.respawn();
+        this.gameSound.playBgm();
     },
 
     checkKeys: function () {
@@ -564,7 +567,7 @@ PacmanGame.prototype = {
         this.life --;
         this.gameSound.playPlayerDeath();
         this.stopGhosts();
-        this.game.time.events.add(1000, function() {
+        this.game.time.events.add(3000, function() {
             if(this.life <= 0) {
                 this.gameOver = true;
             }
