@@ -94,13 +94,13 @@ Pacman.prototype.update = function() {
         if (this.marker.x < 0) {
             this.sprite.x = this.game.map.widthInPixels - 2;
         }
-        if (this.marker.x >= this.game.map.widthInPixels) {
+        if (this.marker.x >= this.game.map.width) {
             this.sprite.x = 1;
         }
         if (this.marker.y < 0) {
             this.sprite.y = this.game.map.heightInPixels - 2;
         }
-        if (this.marker.y >= this.game.map.heightInPixels) {
+        if (this.marker.y >= this.game.map.height) {
             this.sprite.y = 1;
         }
 

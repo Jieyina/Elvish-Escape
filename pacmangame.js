@@ -3,7 +3,6 @@ var PacmanGame = function (game) {
     this.level = 1;
     this.game = game;
     this.gameSound = new Sounds(this);
-
 };
 
 PacmanGame.prototype = {
