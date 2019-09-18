@@ -1,4 +1,4 @@
-var Ghost = function(game, key, name, startPos, startDir, scatterDes, returnDes, exitDes) {
+var Ghost = function(game, key, name, index, startPos, startDir, scatterDes, returnDes, exitDes) {
     this.game = game;
     this.key  = key;
     this.name = name;
@@ -13,7 +13,6 @@ var Ghost = function(game, key, name, startPos, startDir, scatterDes, returnDes,
 
     this.turnTimer = 0;
     this.TURNING_COOLDOWN = 150;
-    this.RETURNING_COOLDOWN = 100;
     this.RANDOM     = "random";
     this.SCATTER    = "scatter";
     this.CHASE      = "chase";
@@ -23,8 +22,16 @@ var Ghost = function(game, key, name, startPos, startDir, scatterDes, returnDes,
     this.RETURNING_HOME = "returning_home";
     this.lastDirection = null;
 
-    if (this.name === "blinky") this.mode = this.SCATTER;
-    else this.mode = this.AT_HOME;
+    if (this.game.mode === "normal")
+    {
+        if (this.name === "blinky") this.mode = this.SCATTER;
+        else this.mode = this.AT_HOME;
+    }
+    else if (this.game.mode === "bonus")
+    {
+        this.mode = this.RANDOM;
+    }
+
     this.turnPoint = new Phaser.Point();
     this.ghostDestination = new Phaser.Point();
     this.returnDestination = new Phaser.Point(returnDes.x * this.gridsize + this.gridsize/2, returnDes.y * this.gridsize + this.gridsize/2);
@@ -43,13 +50,15 @@ var Ghost = function(game, key, name, startPos, startDir, scatterDes, returnDes,
 
     this.ghost = this.game.add.sprite((startPos.x * this.gridsize) + this.gridsize/2, (startPos.y * this.gridsize) + this.gridsize/2, key, 0);
     this.ghost.name = this.name;
+    this.ghost.index = index;
     this.ghost.anchor.set(0.5);
 
     this.ghost.animations.add("left", [16, 17, 18, 19, 20, 21, 22, 23], 15, true);
     this.ghost.animations.add("right", [0, 1, 2, 3, 4, 5, 6, 7], 15, true);
     this.ghost.animations.add("frightened left", [24, 25, 26, 27, 28, 29, 30, 31], 15, true);
     this.ghost.animations.add("frightened right", [8, 9, 10, 11, 12, 13, 14, 15], 15, true);
-    //this.ghost.play(startDir);
+    this.ghost.animations.add("dead-right", [32, 33, 34, 35, 36, 37, 38, 39], 15, true);
+    this.ghost.animations.add("dead-left", [40, 41, 42, 43, 44, 45, 46, 47], 15, true);
 
     this.game.physics.arcade.enable(this.ghost);
     this.ghost.body.setSize(32, 32, 0, 0);
@@ -59,6 +68,43 @@ var Ghost = function(game, key, name, startPos, startDir, scatterDes, returnDes,
 
 Ghost.prototype = {
     update: function() {
+        if (this.currentDir === Phaser.LEFT && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME) {
+            this.ghost.animations.play("left");
+        } else if (this.currentDir === Phaser.RIGHT && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME) {
+            this.ghost.animations.play("right");
+        } else if (this.currentDir === Phaser.UP && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME && this.lastDirection === Phaser.LEFT) {
+            this.ghost.animations.play("left");
+        } else if (this.currentDir === Phaser.UP && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME && this.lastDirection === Phaser.RIGHT) {
+            this.ghost.animations.play("right");
+        } else if (this.currentDir === Phaser.DOWN && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME && this.lastDirection === Phaser.LEFT) {
+            this.ghost.animations.play("left");
+        } else if (this.currentDir === Phaser.DOWN && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME && this.lastDirection === Phaser.RIGHT) {
+            this.ghost.animations.play("right");
+        } else if (this.currentDir === Phaser.LEFT && this.mode === this.RANDOM) {
+            this.ghost.animations.play("frightened left");
+        } else if (this.currentDir === Phaser.RIGHT && this.mode === this.RANDOM) {
+            this.ghost.animations.play("frightened right");
+        } else if (this.currentDir === Phaser.UP && this.mode === this.RANDOM && this.lastDirection === Phaser.LEFT) {
+            this.ghost.animations.play("frightened left");
+        } else if (this.currentDir === Phaser.UP && this.mode === this.RANDOM && this.lastDirection === Phaser.RIGHT) {
+            this.ghost.animations.play("frightened right");
+        } else if (this.currentDir === Phaser.DOWN && this.mode === this.RANDOM && this.lastDirection === Phaser.LEFT) {
+            this.ghost.animations.play("frightened left");
+        } else if (this.currentDir === Phaser.DOWN && this.mode === this.RANDOM && this.lastDirection === Phaser.RIGHT) {
+            this.ghost.animations.play("frightened right");
+        } else if (this.currentDir === Phaser.LEFT && this.mode === this.RETURNING_HOME) {
+            this.ghost.animations.play("dead-left");
+        } else if (this.currentDir === Phaser.RIGHT && this.mode === this.RETURNING_HOME) {
+            this.ghost.animations.play("dead-right");
+        } else if (this.currentDir === Phaser.UP && this.mode === this.RETURNING_HOME && this.lastDirection === Phaser.LEFT) {
+            this.ghost.animations.play("dead-left");
+        } else if (this.currentDir === Phaser.UP && this.mode === this.RETURNING_HOME && this.lastDirection === Phaser.RIGHT) {
+            this.ghost.animations.play("dead-right");
+        } else if (this.currentDir === Phaser.DOWN && this.mode === this.RETURNING_HOME && this.lastDirection === Phaser.LEFT) {
+            this.ghost.animations.play("dead-left");
+        } else if (this.currentDir === Phaser.DOWN && this.mode === this.RETURNING_HOME && this.lastDirection === Phaser.RIGHT) {
+            this.ghost.animations.play("dead-right");
+        }
 
         this.game.physics.arcade.collide(this.ghost, this.game.layer);
         
@@ -96,7 +142,7 @@ Ghost.prototype = {
                     possibleExits.push(q);
                 }
             }
-            console.log(this.name, possibleExits);
+            // console.log(this.name, possibleExits);
             switch (this.mode) {
                 case this.RANDOM:
                     if (this.turnTimer < this.game.time.time) {
@@ -133,7 +179,6 @@ Ghost.prototype = {
                         this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
                         this.mode = this.AT_HOME;
                         this.game.gimeMeExitOrder(this);
-                        return;
                     }
                     this.ghostDestination = this.returnDestination;
                     if (this.turnTimer < this.game.time.time) {
@@ -272,8 +317,10 @@ Ghost.prototype = {
                         this.ghost.x = this.turnPoint.x;
                         this.ghost.y = this.turnPoint.y;
                         this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
-                        this.mode = this.game.getCurrentMode();
-                        return;
+                        if (this.game.mode === "normal")
+                            this.mode = this.game.getCurrentMode();
+                        else if (this.game.mode === "bonus")
+                            this.mode = this.CHASE;
                     }
                     this.ghostDestination = this.exitDestination;
                     if (this.turnTimer < this.game.time.time) {
@@ -449,15 +496,53 @@ Ghost.prototype = {
                 return dest;
                 
             case "inky":
-                var pacmanPos = this.game.pacman.getPosition();
-                var blinkyPos = this.game.blinky.getPosition();
-                var diff = Phaser.Point.subtract(pacmanPos, blinkyPos);
-                var dest = Phaser.Point.add(pacmanPos, diff);
-                if (dest.x < this.gridsize/2) dest.x = this.gridsize/2;
-                if (dest.x > this.game.map.widthInPixels - this.gridsize/2) dest.x = this.game.map.widthInPixels - this.gridsize/2;
-                if (dest.y < this.gridsize/2) dest.y = this.gridsize/2;
-                if (dest.y > this.game.map.heightInPixels - this.gridsize/2) dest.y = this.game.map.heightInPixels - this.gridsize/2;
-                return dest;
+                if (this.game.mode === "normal")
+                {
+                    var pacmanPos = this.game.pacman.getPosition();
+                    var blinkyPos = this.game.blinky.getPosition();
+                    var diff = Phaser.Point.subtract(pacmanPos, blinkyPos);
+                    var dest = Phaser.Point.add(pacmanPos, diff);
+                    if (dest.x < this.gridsize/2) dest.x = this.gridsize/2;
+                    if (dest.x > this.game.map.widthInPixels - this.gridsize/2) dest.x = this.game.map.widthInPixels - this.gridsize/2;
+                    if (dest.y < this.gridsize/2) dest.y = this.gridsize/2;
+                    if (dest.y > this.game.map.heightInPixels - this.gridsize/2) dest.y = this.game.map.heightInPixels - this.gridsize/2;
+                    return dest;
+                }
+                else if (this.game.mode === "bonus")
+                {
+                    switch (this.ghost.index)
+                    {
+                        case 14:
+                            var blinkyPos = this.game.ghosts[0].getPosition();
+                            break;
+                        case 15:
+                            var blinkyPos = this.game.ghosts[1].getPosition();
+                            break;
+                        case 16:
+                            var blinkyPos = this.game.ghosts[2].getPosition();
+                            break;
+                        case 17:
+                            var blinkyPos = this.game.ghosts[3].getPosition();
+                            break;
+                        case 18:
+                            var blinkyPos = this.game.ghosts[4].getPosition();
+                            break;
+                        case 19:
+                            var blinkyPos = this.game.ghosts[5].getPosition();
+                            break;
+                        case 20:
+                            var blinkyPos = this.game.ghosts[6].getPosition();
+                            break;
+                    }
+                    var pacmanPos = this.game.pacman.getPosition();
+                    var diff = Phaser.Point.subtract(pacmanPos, blinkyPos);
+                    var dest = Phaser.Point.add(pacmanPos, diff);
+                    if (dest.x < this.gridsize/2) dest.x = this.gridsize/2;
+                    if (dest.x > this.game.map.widthInPixels - this.gridsize/2) dest.x = this.game.map.widthInPixels - this.gridsize/2;
+                    if (dest.y < this.gridsize/2) dest.y = this.gridsize/2;
+                    if (dest.y > this.game.map.heightInPixels - this.gridsize/2) dest.y = this.game.map.heightInPixels - this.gridsize/2;
+                    return dest;
+                }
                 
             case "clyde":
                 var pacmanPos = this.game.pacman.getPosition();
@@ -493,10 +578,13 @@ Ghost.prototype = {
         } else {
             speed = this.ghostSpeed;
             // this.ghost.animations.play(dir);
-            if (this.name === "blinky" && this.game.numDots === 2) {
-                speed = this.cruiseSpeed;
-            } else if (this.name === "blinky" && this.game.numDots < 2) {
-                speed = this.ElroySpeed;
+            if (this.game.mode === "normal")
+            {
+                if (this.name === "blinky" && this.game.numKeys === 2) {
+                    speed = this.cruiseSpeed;
+                } else if (this.name === "blinky" && this.game.numKeys < 2) {
+                    speed = this.ElroySpeed;
+                }
             }
         }
         
@@ -505,33 +593,9 @@ Ghost.prototype = {
             return;
         }
 
-        if (dir === Phaser.LEFT || dir === Phaser.UP) speed = -speed;
+        if (dir === Phaser.LEFT || dir === Phaser.UP)
+            speed = -speed;
 
-        if (dir === Phaser.LEFT && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME) {
-            this.ghost.animations.play("left");
-        } else if (dir === Phaser.RIGHT && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME) {
-            this.ghost.animations.play("right");
-        } else if (dir === Phaser.UP && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME && this.lastDirection === Phaser.LEFT) {
-            this.ghost.animations.play("left");
-        } else if (dir === Phaser.UP && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME && this.lastDirection === Phaser.RIGHT) {
-            this.ghost.animations.play("right");
-        } else if (dir === Phaser.DOWN && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME && this.lastDirection === Phaser.LEFT) {
-            this.ghost.animations.play("left");
-        } else if (dir === Phaser.DOWN && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME && this.lastDirection === Phaser.RIGHT) {
-            this.ghost.animations.play("right");
-        } else if (dir === Phaser.LEFT && (this.mode === this.RANDOM || this.mode === this.RETURNING_HOME)) {
-            this.ghost.animations.play("frightened left");
-        } else if (dir === Phaser.RIGHT && (this.mode === this.RANDOM || this.mode === this.RETURNING_HOME)) {
-            this.ghost.animations.play("frightened right");
-        } else if (dir === Phaser.UP && (this.mode === this.RANDOM || this.mode === this.RETURNING_HOME) && this.lastDirection === Phaser.LEFT) {
-            this.ghost.animations.play("frightened left");
-        } else if (dir === Phaser.UP && (this.mode === this.RANDOM || this.mode === this.RETURNING_HOME) && this.lastDirection === Phaser.RIGHT) {
-            this.ghost.animations.play("frightened right");
-        } else if (dir === Phaser.DOWN && (this.mode === this.RANDOM || this.mode === this.RETURNING_HOME) && this.lastDirection === Phaser.LEFT) {
-            this.ghost.animations.play("frightened left");
-        } else if (dir === Phaser.DOWN && (this.mode === this.RANDOM || this.mode === this.RETURNING_HOME) && this.lastDirection === Phaser.RIGHT) {
-            this.ghost.animations.play("frightened right");
-        }
         if (dir === Phaser.LEFT || dir === Phaser.RIGHT) {
             this.ghost.body.velocity.x = speed;
         } else {
@@ -558,14 +622,5 @@ Ghost.prototype = {
             this.mode = this.AT_HOME;
             this.game.gimeMeExitOrder(this);
         }
-    },
-
-    restart: function() {
-        this.ghost.x = this.startPos.x * this.gridsize + this.gridsize/2;
-        this.ghost.y = this.startPos.y * this.gridsize + this.gridsize/2;
-        this.ghost.body.reset(this.startPos.x * this.gridsize + this.gridsize/2, this.startPos.y * this.gridsize + this.gridsize/2);
-        this.currentDir = this.startDir;
-        if (this.name === "blinky") this.mode = this.SCATTER;
-        else this.mode = this.AT_HOME;
     }
 };

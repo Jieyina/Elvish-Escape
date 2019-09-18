@@ -18,7 +18,7 @@
   <component name="ProjectId" id="1QkXbTrbrAVECYwQO472jwoiKNz" />
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="D:/Tools/wamp64/www/phaserPacman" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -53,6 +53,7 @@
       <workItem from="1568683890514" duration="1861000" />
       <workItem from="1568686619279" duration="16810000" />
       <workItem from="1568733704109" duration="13818000" />
+      <workItem from="1568828973845" duration="16684000" />
     </task>
     <servers />
   </component>

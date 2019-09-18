@@ -6,7 +6,6 @@ var Pacman = function(game, key, startPos) {
     this.speed = 150;
     this.life = 3;
     this.isDead = false;
-    this.isAnimatingDeath = false;
     this.keyPressTimer = 0;
     
     this.gridsize = this.game.gridsize;
@@ -37,9 +36,11 @@ var Pacman = function(game, key, startPos) {
     // this.sprite.animations.add("death", [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], 10, false);
     
     this.game.physics.arcade.enable(this.sprite);
-    this.sprite.body.setSize(28, 32, this.offsetX, this.offsetY);
-    
-    this.sprite.play('munch');
+    this.sprite.body.setSize(32, 32, this.offsetX, this.offsetY);
+
+    if (this.game.mode === "normal") this.sprite.play('munch');
+    else if (this.game.mode === "bonus") this.sprite.play('armed');
+
     this.move(Phaser.LEFT);
 };
 
@@ -81,12 +82,14 @@ Pacman.prototype.move = function(direction) {
 };
 
 Pacman.prototype.update = function() {
-    // console.log("is dead " + this.isDead);
     if (!this.isDead) {
         this.game.physics.arcade.collide(this.sprite, this.game.layer);
-        this.game.physics.arcade.overlap(this.sprite, this.game.keys, this.eatDot, null, this);
-        this.game.physics.arcade.overlap(this.sprite, this.game.pills, this.eatPill, null, this);
-        this.game.physics.arcade.overlap(this.sprite, this.game.treasure, this.pickTreasure, null, this);
+        if (this.game.mode === "normal")
+        {
+            this.game.physics.arcade.overlap(this.sprite, this.game.keys, this.eatDot, null, this);
+            this.game.physics.arcade.overlap(this.sprite, this.game.pills, this.eatPill, null, this);
+            this.game.physics.arcade.overlap(this.sprite, this.game.treasure, this.pickTreasure, null, this);
+        }
 
         this.marker.x = this.game.math.snapToFloor(Math.floor(this.sprite.x), this.gridsize) / this.gridsize;
         this.marker.y = this.game.math.snapToFloor(Math.floor(this.sprite.y), this.gridsize) / this.gridsize;
@@ -115,7 +118,7 @@ Pacman.prototype.update = function() {
             this.turn();
         }
 
-        if (this.game.gameWin === false && this.game.keys.total === 0 && this.marker.x === this.game.goalPos.x && this.marker.y === this.game.goalPos.y)
+        if (this.game.mode === "normal" && this.game.gameWin === false && this.game.keys.total === 0 && this.marker.x === this.game.goalPos.x && this.marker.y === this.game.goalPos.y)
         {
             this.game.winGame();
         }
@@ -241,7 +244,7 @@ Pacman.prototype.turn = function () {
 };
 
 Pacman.prototype.checkDirection = function (turnTo) {
-    if (this.game.gameWin === true || this.game.gameOver === true || this.turning === turnTo || this.directions[turnTo] === null || !this.checkSafetile(this.directions[turnTo].index))
+    if (this.game.gameWin === true || this.isDead === true || this.turning === turnTo || this.directions[turnTo] === null || !this.checkSafetile(this.directions[turnTo].index))
     {
         //  Invalid direction if they're already set to turn that way
         //  Or there is no tile there, or the tile isn't index 1 (a floor tile)
@@ -286,7 +289,6 @@ Pacman.prototype.checkSafetile = function(tileIndex) {
 Pacman.prototype.respawn = function () {
     // console.log("pac respawn");
     this.isDead = false;
-    this.isAnimatingDeath = false;
     this.sprite.x = this.startPos.x * this.gridsize + this.gridsize/2;
     this.sprite.y = this.startPos.y * this.gridsize + this.gridsize/2;
     this.sprite.body.reset(this.sprite.x, this.sprite.y);

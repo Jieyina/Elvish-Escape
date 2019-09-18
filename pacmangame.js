@@ -6,12 +6,16 @@ var PacmanGame = function (game) {
 };
 
 PacmanGame.prototype = {
-    init: function (score, life) {
+    init: function (score, life, level) {
         this.map = null;
         this.layer = null;
         this.item = null;
         this.numKeys = 4;
+        this.mode = "normal";
         this.TOTAL_KEYS = 0;
+        if (level > 1) {
+            this.level = level;
+        }
         if (this.level > 1)
         {
             this.score = score;
@@ -20,10 +24,6 @@ PacmanGame.prototype = {
             this.score = 0;
             this.life = 3;
         }
-        /*
-        this.score = 0;
-        this.life = 3;
-         */
         this.pacman = null;
         this.clyde = null;
         this.pinky = null;
@@ -291,11 +291,11 @@ PacmanGame.prototype = {
             this.livesImage.push(this.add.image(448 + (i * 32), 575, 'lifecounter'));
         }
 
-        this.blinky = new Ghost(this, "monster1", "blinky", this.blinkyPos, Phaser.LEFT, this.blinkyScatterPos, this.returnDes, this.exitDes);
-        this.pinky = new Ghost(this, "monster2", "pinky", this.pinkyPos, Phaser.RIGHT, this.pinkyScatterPos, this.returnDes, this.exitDes);
-        this.inky = new Ghost(this, "monster3", "inky", this.inkyPos, Phaser.RIGHT, this.inkyScatterPos, this.returnDes, this.exitDes);
-        this.clyde = new Ghost(this, "monster4", "clyde", this.clydePos, Phaser.LEFT, this.clydeScatterPos, this.returnDes, this.exitDes);
-        this.ghosts.push(this.clyde, this.pinky, this.inky, this.blinky);
+        this.blinky = new Ghost(this, "monster1", "blinky", 0, this.blinkyPos, Phaser.LEFT, this.blinkyScatterPos, this.returnDes, this.exitDes);
+        this.pinky = new Ghost(this, "monster2", "pinky", 1, this.pinkyPos, Phaser.RIGHT, this.pinkyScatterPos, this.returnDes, this.exitDes);
+        this.inky = new Ghost(this, "monster3", "inky", 2, this.inkyPos, Phaser.RIGHT, this.inkyScatterPos, this.returnDes, this.exitDes);
+        this.clyde = new Ghost(this, "monster4", "clyde", 3, this.clydePos, Phaser.LEFT, this.clydeScatterPos, this.returnDes, this.exitDes);
+        this.ghosts.push(this.blinky, this.pinky, this.inky, this.clyde);
 
         // Score and debug texts
         this.scoreText = this.game.add.text(35, 3, "Score: " + this.score, { fontSize: "24px", fill: "#fff" });
@@ -303,9 +303,11 @@ PacmanGame.prototype = {
         this.winHint = this.game.add.text(150, 230, "", { fontSize: "24px", fill: "#fff" });
         this.loseText = this.game.add.text(190, 140, "", { fontSize: "36px", fill: "#fff" });
         this.loseHint = this.game.add.text(155, 230, "", { fontSize: "24px", fill: "#fff" });
+        this.bonusHint = this.game.add.text(200, 580, "", { fontSize: "12px", fill: "#fff" });
         this.cursors = this.game.input.keyboard.createCursorKeys();
         this.cursors["d"] = this.game.input.keyboard.addKey(Phaser.Keyboard.D);
         this.cursors["r"] = this.game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+        this.cursors["s"] = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
         
         this.changeModeTimer = this.time.time + this.TIME_MODES[this.currentMode].time;
         this.gimeMeExitOrder(this.pinky);
@@ -314,22 +316,24 @@ PacmanGame.prototype = {
 
     update: function () {
         this.scoreText.text = "Score: " + this.score;
-        if (this.gameWin === true) {
+        if (this.gameWin === true && this.gameOver === false) {
             this.winText.text = "You Win!";
             this.winHint.text = "Press Enter to continue.";
         } else {
             this.winText.text = "";
             this.winHint.text = "";
         }
-        if (this.gameOver === true) {
+        if (this.gameOver === true && this.gameWin === false) {
             this.loseText.text = "You Lose!";
-            this.loseHint.text = "Press Enter to restart.";
+            this.loseHint.text = "Press Enter to continue.";
+            this.bonusHint.text = "Or press Space to revenge."
         } else {
             this.loseText.text = "";
             this.loseHint.text = "";
+            this.bonusHint.text = "";
         }
         
-        if (!this.pacman.isDead) {
+        if (!this.pacman.isDead && !this.gameWin) {
             for (var i=0; i<this.ghosts.length; i++) {
                 if (this.ghosts[i].mode !== this.ghosts[i].RETURNING_HOME) {
                     this.physics.arcade.overlap(this.pacman.sprite, this.ghosts[i].ghost, this.dogEatsDog, null, this);
@@ -376,8 +380,10 @@ PacmanGame.prototype = {
 
         this.pacman.update();
 		this.updateGhosts();
+		/*
         for (var i=0; i< this.ghosts.length; i++)
             console.log(this.ghosts[i].name, this.ghosts[i].currentDir, this.ghosts[i].mode);
+		 */
 
         if (this.score > 6000 * this.lifeBack) {
             this.life++;
@@ -390,16 +396,27 @@ PacmanGame.prototype = {
 
         if (this.gameOver === true && this.cursors.r.isDown)
         {
-            this.level = 1;
             this.gameSound.clear();
-            this.game.state.restart();
+            this.game.state.start("GameOver", true, false, this.score);
+        }
+        if (this.gameOver === true && this.cursors.s.isDown)
+        {
+            this.gameSound.clear();
+            this.game.state.start("Bonus", true, false, this.score);
         }
         if (this.gameWin === true && this.cursors.r.isDown)
         {
-            this.level++;
-            if (this.level > 3) this.level = 3;
-            this.gameSound.clear();
-            this.game.state.restart(true, false, this.score, this.life);
+            if (this.level < 3)
+            {
+                // var level = this.level++;
+                this.gameSound.clear();
+                this.game.state.restart(true, false, this.score, this.life, this.level++);
+            }
+            else if (this.level === 3)
+            {
+                this.gameSound.clear();
+                this.game.state.start("Bonus", true, false, this.score);
+            }
         }
     },
     
@@ -549,18 +566,21 @@ PacmanGame.prototype = {
     },
 
     killPacman: function() {
-        this.pacman.isDead = true;
-        this.life --;
-        this.gameSound.playPlayerDeath();
-        this.stopGhosts();
-        this.game.time.events.add(3000, function() {
-            if(this.life <= 0) {
-                this.gameOver = true;
-            }
-            else {
-                this.respawn();
-            }
-        }, this, null);
+        if (!this.pacman.isDead)
+        {
+            this.pacman.isDead = true;
+            this.life --;
+            this.gameSound.playPlayerDeath();
+            // this.stopGhosts();
+            this.game.time.events.add(3000, function() {
+                if(this.life <= 0) {
+                    this.gameOver = true;
+                }
+                else {
+                    this.respawn();
+                }
+            }, this, null);
+        }
     },
 
     stopGhosts: function() {
@@ -572,7 +592,7 @@ PacmanGame.prototype = {
     winGame: function() {
         this.gameWin = true;
         this.score += 500;
-        this.stopGhosts();
+        // this.stopGhosts();
         this.pacman.move(Phaser.NONE);
         this.gameSound.playLevelComplete();
         this.door.children[0].play('door-opening');
