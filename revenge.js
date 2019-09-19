@@ -21,7 +21,7 @@ Revenge.prototype = {
     },
 
     update: function() {
-        this.game.time.events.add(5000, this.startRevenge, this, null);
+        this.game.time.events.add(6000, this.startRevenge, this, null);
     },
 
     startRevenge: function(){

@@ -13,7 +13,7 @@ gameTitle.prototype = {
 			this.game.bgm_menu.restart();
 		this.game.bgm_menu.play();
 		this.game.add.image(0, 0, 'title');
-		this.game.add.text(100, 280, "Press Enter to start.", { fontSize: "36px", fill: "#fff" });
+		this.game.add.text(113, 428, "Press Enter to start!", { fontSize: "32px", fill: "#fff" });
 	},
 
 	update: function() {
