@@ -35,6 +35,7 @@
     <script src="bonus.js"></script>
     <script src="gameover.js"></script>
     <script src="introscreen.js"></script>
+    <script src="revenge.js"></script>
     <script>
         (function() {
             var game = new Phaser.Game(544, 608, Phaser.AUTO, "game");
@@ -43,6 +44,7 @@
             game.state.add("GameTitle", gameTitle);
             game.state.add("IntroScreen", introScreen);
             game.state.add("TheGame", PacmanGame);
+            game.state.add("Revenge", Revenge);
             game.state.add("Bonus", Bonus);
             game.state.add("GameOver", gameOver);
             game.state.start("Boot");

@@ -402,7 +402,7 @@ PacmanGame.prototype = {
         if (this.gameOver === true && this.cursors.s.isDown)
         {
             this.gameSound.clear();
-            this.game.state.start("Bonus", true, false, this.score);
+            this.game.state.start("Revenge", true, false, this.score);
         }
         if (this.gameWin === true && this.cursors.r.isDown)
         {
@@ -414,7 +414,7 @@ PacmanGame.prototype = {
             else if (this.level === 3)
             {
                 this.gameSound.clear();
-                this.game.state.start("Bonus", true, false, this.score);
+                this.game.state.start("Revenge", true, false, this.score);
             }
         }
     },

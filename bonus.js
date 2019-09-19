@@ -52,7 +52,6 @@ Bonus.prototype = {
 
     create: function () {
         this.gameSound.createAllInstances();
-        this.gameSound.playBonusBgm();
 
         this.map = this.add.tilemap('map4');
         this.map.addTilesetImage('Tile_Level4', 'tiles4');

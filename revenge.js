@@ -7,17 +7,24 @@ Revenge.prototype = {
         this.score = score;
     },
 
+    preload: function() {
+        this.game.load.audio('bonus-bgm', 'assets/audio/Bonus Level.wav');
+    },
+
     create: function() {
-        this.game.gameSound.playBonusBgm();
-        this.bgm_menu.play();
-        this.game.add.image(0, 0, 'title');
-        this.game.add.text(100, 280, "Press Enter to start.", { fontSize: "36px", fill: "#fff" });
+        this.bonus = this.game.add.audio('bonus-bgm', 1, false);
+        this.bonus.play();
+        this.revenge = this.game.add.sprite(5, 300, 'revenge', 0);
+        this.revenge.scale.setTo(0.6,0.6);
+        this.revenge.animations.add("fire", [0, 1, 2, 3, 4], 15, true);
+        this.revenge.play("fire");
     },
 
     update: function() {
-        if(this.game.input.keyboard.isDown(Phaser.Keyboard.ENTER)) {
-            this.bgm_menu.stop();
-            this.game.state.start("IntroScreen");
-        }
+        this.game.time.events.add(5000, this.startRevenge, this, null);
+    },
+
+    startRevenge: function(){
+        this.game.state.start("Bonus", true, false, this.score);
     }
 };
