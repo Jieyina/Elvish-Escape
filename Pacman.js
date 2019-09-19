@@ -6,6 +6,7 @@ var Pacman = function(game, key, startPos) {
     this.speed = 150;
     this.life = 3;
     this.isDead = false;
+    this.isAnimatingDeath = false;
     this.keyPressTimer = 0;
     
     this.gridsize = this.game.gridsize;
@@ -33,7 +34,9 @@ var Pacman = function(game, key, startPos) {
     this.sprite.anchor.setTo(0.5);
     this.sprite.animations.add('munch', [0, 1, 2, 3, 4, 5], 15, true);
     this.sprite.animations.add('armed', [6, 7, 8, 9, 10, 11], 15, true);
-    // this.sprite.animations.add("death", [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], 10, false);
+    this.sprite.animations.add('dance', [72, 73, 74, 75, 76, 77, 78, 79], 15, true);
+    this.sprite.animations.add("death", [12, 13, 14, 15, 16, 17, 24, 25, 26, 27, 28, 29, 36, 37, 38, 39, 40, 41, 48, 49, 50, 51, 52, 53, 60, 61, 62, 63, 64, 65], 15, false);
+    this.sprite.animations.add("death-armed", [18, 19, 20, 21, 22, 23, 30, 31, 32, 33, 34, 35, 42, 43, 44, 45, 46, 47, 54, 55, 56, 57, 58, 59, 66, 67, 68, 69, 70, 71], 15, false);
     
     this.game.physics.arcade.enable(this.sprite);
     this.sprite.body.setSize(32, 32, this.offsetX, this.offsetY);
@@ -120,12 +123,19 @@ Pacman.prototype.update = function() {
 
         if (this.game.mode === "normal" && this.game.gameWin === false && this.game.keys.total === 0 && this.marker.x === this.game.goalPos.x && this.marker.y === this.game.goalPos.y)
         {
+            this.move(Phaser.NONE);
+            this.sprite.play("dance");
             this.game.winGame();
         }
     } else {
         this.move(Phaser.NONE);
         if (!this.isAnimatingDeath) {
-            // this.sprite.play("death");
+            if (this.game.isPaused) {
+                this.sprite.play("death-armed");
+            }
+            else {
+                this.sprite.play("death");
+            }
             this.isAnimatingDeath = true;
         }
     }
@@ -288,6 +298,7 @@ Pacman.prototype.checkSafetile = function(tileIndex) {
 
 Pacman.prototype.respawn = function () {
     this.isDead = false;
+    this.isAnimatingDeath = false;
     this.sprite.x = this.startPos.x * this.gridsize + this.gridsize/2;
     this.sprite.y = this.startPos.y * this.gridsize + this.gridsize/2;
     this.sprite.body.reset(this.sprite.x, this.sprite.y);

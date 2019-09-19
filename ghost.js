@@ -68,17 +68,17 @@ var Ghost = function(game, key, name, index, startPos, startDir, scatterDes, ret
 
 Ghost.prototype = {
     update: function() {
-        if (this.currentDir === Phaser.LEFT && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME) {
+        if (this.currentDir === Phaser.LEFT && this.mode !== this.STOP && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME) {
             this.ghost.animations.play("left");
-        } else if (this.currentDir === Phaser.RIGHT && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME) {
+        } else if (this.currentDir === Phaser.RIGHT && this.mode !== this.STOP && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME) {
             this.ghost.animations.play("right");
-        } else if (this.currentDir === Phaser.UP && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME && this.lastDirection === Phaser.LEFT) {
+        } else if (this.currentDir === Phaser.UP && this.mode !== this.STOP && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME && this.lastDirection === Phaser.LEFT) {
             this.ghost.animations.play("left");
-        } else if (this.currentDir === Phaser.UP && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME && this.lastDirection === Phaser.RIGHT) {
+        } else if (this.currentDir === Phaser.UP && this.mode !== this.STOP && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME && this.lastDirection === Phaser.RIGHT) {
             this.ghost.animations.play("right");
-        } else if (this.currentDir === Phaser.DOWN && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME && this.lastDirection === Phaser.LEFT) {
+        } else if (this.currentDir === Phaser.DOWN && this.mode !== this.STOP && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME && this.lastDirection === Phaser.LEFT) {
             this.ghost.animations.play("left");
-        } else if (this.currentDir === Phaser.DOWN && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME && this.lastDirection === Phaser.RIGHT) {
+        } else if (this.currentDir === Phaser.DOWN && this.mode !== this.STOP && this.mode !== this.RANDOM && this.mode !== this.RETURNING_HOME && this.lastDirection === Phaser.RIGHT) {
             this.ghost.animations.play("right");
         } else if (this.currentDir === Phaser.LEFT && this.mode === this.RANDOM) {
             this.ghost.animations.play("frightened left");

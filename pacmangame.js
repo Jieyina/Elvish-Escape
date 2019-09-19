@@ -570,7 +570,7 @@ PacmanGame.prototype = {
             this.pacman.isDead = true;
             this.life --;
             this.gameSound.playPlayerDeath();
-            // this.stopGhosts();
+            this.stopGhosts();
             this.game.time.events.add(3000, function() {
                 if(this.life <= 0) {
                     this.gameOver = true;
@@ -591,8 +591,7 @@ PacmanGame.prototype = {
     winGame: function() {
         this.gameWin = true;
         this.score += 500;
-        // this.stopGhosts();
-        this.pacman.move(Phaser.NONE);
+        this.stopGhosts();
         this.gameSound.playLevelComplete();
         this.door.children[0].play('door-opening');
     },

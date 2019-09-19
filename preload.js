@@ -18,7 +18,7 @@ preload.prototype = {
 		this.game.load.spritesheet('key_blue', 'assets/pickups/blue-key-sparkle.png', 32, 32);
 		this.game.load.spritesheet('key_green', 'assets/pickups/green-key-sparkle.png', 32, 32);
 		this.game.load.image('sword', 'assets/pickups/sword-big.png');
-		this.game.load.spritesheet('hero', 'assets/hero/elf.png', 32, 32);
+		this.game.load.spritesheet('hero', 'assets/hero/elf.png', 32, 32, 80);
 		this.game.load.spritesheet('monster1', 'assets/monsters/Skull_WalkCycle-red.png', 32, 32);
 		this.game.load.spritesheet('monster2', 'assets/monsters/Skull_WalkCycle-pink.png', 32, 32);
 		this.game.load.spritesheet('monster3', 'assets/monsters/Skull_WalkCycle-green.png', 32, 32);
