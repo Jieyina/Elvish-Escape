@@ -3,8 +3,9 @@ var Revenge = function(game){
 };
 
 Revenge.prototype = {
-    init: function(score) {
+    init: function(score, result) {
         this.score = score;
+        this.result = result;
     },
 
     preload: function() {
@@ -25,6 +26,6 @@ Revenge.prototype = {
     },
 
     startRevenge: function(){
-        this.game.state.start("Bonus", true, false, this.score);
+        this.game.state.start("Bonus", true, false, this.score, this.result);
     }
 };
