@@ -18,7 +18,7 @@
   <component name="ProjectId" id="1QkXbTrbrAVECYwQO472jwoiKNz" />
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="D:/Tools/wamp64/www/phaserPacman" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../Elvish" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -54,6 +54,7 @@
       <workItem from="1568686619279" duration="16810000" />
       <workItem from="1568733704109" duration="13818000" />
       <workItem from="1568828973845" duration="40743000" />
+      <workItem from="1568905993164" duration="1019000" />
     </task>
     <servers />
   </component>
