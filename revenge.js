@@ -13,8 +13,8 @@ Revenge.prototype = {
     },
 
     create: function() {
-        this.bonus = this.game.add.audio('bonus-bgm', 1, false);
-        this.bonus.play();
+        this.game.bonus = this.game.add.audio('bonus-bgm', 1, false);
+        this.game.bonus.play();
         this.revenge = this.game.add.sprite(5, 300, 'revenge', 0);
         this.revenge.scale.setTo(0.6,0.6);
         this.revenge.animations.add("fire", [0, 1, 2, 3, 4], 15, true);

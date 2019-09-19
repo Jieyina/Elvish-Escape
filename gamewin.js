@@ -8,7 +8,7 @@ gameWin.prototype = {
     },
 
     create: function() {
-        this.game.add.text(175, 245, "Your Score: " + this.score, { fontSize: "36px", fill: "#fff" });
+        this.game.bonus.play();
         this.map = this.add.tilemap('ending');
         this.map.addTilesetImage('Tile_Level3', 'tiles3');
         this.layer = this.map.createLayer('ground');
@@ -30,5 +30,6 @@ gameWin.prototype = {
         this.map.createFromTiles(20, -1, 'hero', this.sprites, this.player);
         this.player.children[0].animations.add("dance", [72, 73, 74, 75, 76, 77, 78, 79], 15, true);
         this.player.children[0].play("dance");
+        this.game.add.text(105, 245, "Your Score: " + this.score, { fontSize: "36px", fill: "#fff" });
     }
 };

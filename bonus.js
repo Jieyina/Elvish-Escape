@@ -378,6 +378,7 @@ Bonus.prototype = {
     killPacman: function() {
         this.pacman.isDead = true;
         this.stopGhosts();
+        this.game.bonus.stop();
         this.gameSound.playPlayerDeath();
         this.gameOver = true;
     },
