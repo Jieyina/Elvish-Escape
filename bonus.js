@@ -42,7 +42,7 @@ Bonus.prototype = {
         this.clydeScatterPos = {x:2, y:17};
         this.returnDes = {x:8, y:3};
         this.exitDes = {x:8, y:4};
-        this.safetile = [13, 14, 15, 23, 25, 33, 34, 35, 41, 51, 24, 86, 85];
+        this.safetile = [13, 14, 15, 23, 25, 33, 34, 35, 41, 51, 24, 86, 85, 72];
         this.SPECIAL_TILES = [];
     },
 
