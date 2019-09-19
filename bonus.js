@@ -135,11 +135,6 @@ Bonus.prototype = {
         this.firework4.animations.add("fire", [0, 1, 2, 3, 4, 5], 15, true);
         this.firework4.play("fire");
 
-        this.slashSprite = this.game.add.sprite(8, 13, 'slash');
-        this.slashSprite.animations.add('cut', [0, 1, 2, 3], 12, false);
-        this.slashSprite.anchor.x = 0.5;
-        this.slashSprite.anchor.y = 0.5;
-
         // Score and debug texts
         this.scoreText = this.game.add.text(35, 3, "Score: " + this.score, { fontSize: "24px", fill: "#fff" });
         this.winText = this.game.add.text(190, 140, "", { fontSize: "36px", fill: "#fff" });
@@ -275,6 +270,7 @@ Bonus.prototype = {
     dogEatsDog: function(pacman, ghost) {
         if (Phaser.Math.distance(pacman.x, pacman.y, ghost.x, ghost.y) < 20) {
             if (this.ghosts[ghost.index].mode === "random") {
+                this.ghosts[ghost.index].slash.play("slash");
                 this.gameSound.playKillEnemy();
                 this.ghosts[ghost.index].mode = "returning_home";
 
@@ -364,7 +360,6 @@ Bonus.prototype = {
                         this.score += 1600;
                         break;
                 }
-                this.playSlashAnimation(ghost.x, ghost.y);
             } else if (this.ghosts[ghost.index].mode !== "returning_home") {
                 this.killPacman();
             }
@@ -399,12 +394,5 @@ Bonus.prototype = {
         for (var i=0; i<this.ghosts.length; i++) {
             this.ghosts[i].mode = this.ghosts[i].STOP;
         }
-    },
-
-    playSlashAnimation: function(posX, posY) {
-        this.slashSprite.animations.stop();
-        this.slashSprite.x = posX;
-        this.slashSprite.y = posY;
-        this.slashSprite.play('cut');
     }
 };

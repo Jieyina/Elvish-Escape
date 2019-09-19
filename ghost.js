@@ -60,7 +60,12 @@ var Ghost = function(game, key, name, index, startPos, startDir, scatterDes, ret
     this.ghost.animations.add("dead-right", [32, 33, 34, 35, 36, 37, 38, 39], 15, true);
     this.ghost.animations.add("dead-left", [40, 41, 42, 43, 44, 45, 46, 47], 15, true);
 
+    this.slash = this.game.add.sprite((startPos.x * this.gridsize) + this.gridsize/2, (startPos.y * this.gridsize) + this.gridsize/2, 'slash', 3);
+    this.slash.anchor.set(0.5);
+    this.slash.animations.add("slash", [0, 1, 2, 3], 12, false);
+
     this.game.physics.arcade.enable(this.ghost);
+    this.game.physics.arcade.enable(this.slash);
     this.ghost.body.setSize(32, 32, 0, 0);
 
     this.move(startDir);
@@ -152,6 +157,7 @@ Ghost.prototype = {
                             this.ghost.y = this.turnPoint.y;
 
                             this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
+                            this.slash.body.reset(this.turnPoint.x, this.turnPoint.y);
                             this.lastDirection = this.currentDir;
                             this.move(this.opposites[this.currentDir]);
                         }
@@ -165,6 +171,7 @@ Ghost.prototype = {
                             this.ghost.y = this.turnPoint.y;
 
                             this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
+                            this.slash.body.reset(this.turnPoint.x, this.turnPoint.y);
                             this.lastDirection = this.currentDir;
                             this.move(newDirection);
                         }
@@ -177,6 +184,7 @@ Ghost.prototype = {
                         this.ghost.x = this.turnPoint.x;
                         this.ghost.y = this.turnPoint.y;
                         this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
+                        this.slash.body.reset(this.turnPoint.x, this.turnPoint.y);
                         this.mode = this.AT_HOME;
                         this.game.gimeMeExitOrder(this);
                     }
@@ -190,6 +198,7 @@ Ghost.prototype = {
                             this.ghost.y = this.turnPoint.y;
 
                             this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
+                            this.slash.body.reset(this.turnPoint.x, this.turnPoint.y);
                             this.lastDirection = this.currentDir;
                             this.move(this.opposites[this.currentDir]);
                         }
@@ -232,6 +241,7 @@ Ghost.prototype = {
                             this.ghost.y = this.turnPoint.y;
 
                             this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
+                            this.slash.body.reset(this.turnPoint.x, this.turnPoint.y);
                             this.lastDirection = this.currentDir;
                             this.move(bestDecision);
                         }
@@ -251,6 +261,7 @@ Ghost.prototype = {
                             this.ghost.y = this.turnPoint.y;
 
                             this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
+                            this.slash.body.reset(this.turnPoint.x, this.turnPoint.y);
                             this.lastDirection = this.currentDir;
                             this.move(this.opposites[this.currentDir]);
                         }
@@ -290,6 +301,7 @@ Ghost.prototype = {
                             this.ghost.y = this.turnPoint.y;
 
                             this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
+                            this.slash.body.reset(this.turnPoint.x, this.turnPoint.y);
                             this.lastDirection = this.currentDir;
                             this.move(bestDecision);
                         }
@@ -303,6 +315,7 @@ Ghost.prototype = {
                         this.ghost.x = this.turnPoint.x;
                         this.ghost.y = this.turnPoint.y;
                         this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
+                        this.slash.body.reset(this.turnPoint.x, this.turnPoint.y);
                         this.lastDirection = this.currentDir;
                         var dir = (this.currentDir === Phaser.LEFT) ? Phaser.RIGHT : Phaser.LEFT;
                         this.move(dir);
@@ -317,6 +330,7 @@ Ghost.prototype = {
                         this.ghost.x = this.turnPoint.x;
                         this.ghost.y = this.turnPoint.y;
                         this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
+                        this.slash.body.reset(this.turnPoint.x, this.turnPoint.y);
                         if (this.game.mode === "normal")
                             this.mode = this.game.getCurrentMode();
                         else if (this.game.mode === "bonus")
@@ -332,6 +346,7 @@ Ghost.prototype = {
                             this.ghost.y = this.turnPoint.y;
 
                             this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
+                            this.slash.body.reset(this.turnPoint.x, this.turnPoint.y);
                             this.lastDirection = this.currentDir;
                             this.move(this.opposites[this.currentDir]);
                         }
@@ -371,6 +386,7 @@ Ghost.prototype = {
                             this.ghost.y = this.turnPoint.y;
 
                             this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
+                            this.slash.body.reset(this.turnPoint.x, this.turnPoint.y);
                             this.lastDirection = this.currentDir;
                             this.move(bestDecision);
                         }
@@ -390,6 +406,7 @@ Ghost.prototype = {
                             this.ghost.y = this.turnPoint.y;
 
                             this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
+                            this.slash.body.reset(this.turnPoint.x, this.turnPoint.y);
                             this.lastDirection = this.currentDir;
                             this.move(this.opposites[this.currentDir]);
                         }
@@ -429,6 +446,7 @@ Ghost.prototype = {
                             this.ghost.y = this.turnPoint.y;
 
                             this.ghost.body.reset(this.turnPoint.x, this.turnPoint.y);
+                            this.slash.body.reset(this.turnPoint.x, this.turnPoint.y);
                             this.lastDirection = this.currentDir;
                             this.move(bestDecision);
                         }
@@ -442,6 +460,8 @@ Ghost.prototype = {
                     this.move(Phaser.NONE);
                     break;
             }
+            this.slash.x = this.ghost.x;
+            this.slash.y = this.ghost.y;
         }
     },
     
@@ -590,6 +610,7 @@ Ghost.prototype = {
         
         if (this.currentDir === Phaser.NONE) {
             this.ghost.body.velocity.x = this.ghost.body.velocity.y = 0;
+            this.slash.body.velocity.x = this.slash.body.velocity.y = 0;
             return;
         }
 
@@ -598,8 +619,10 @@ Ghost.prototype = {
 
         if (dir === Phaser.LEFT || dir === Phaser.RIGHT) {
             this.ghost.body.velocity.x = speed;
+            this.slash.body.velocity.x = speed;
         } else {
             this.ghost.body.velocity.y = speed;
+            this.slash.body.velocity.y = speed;
         }
     },
     
@@ -615,7 +638,10 @@ Ghost.prototype = {
     respawn: function() {
         this.ghost.x = this.startPos.x * this.gridsize + this.gridsize/2;
         this.ghost.y = this.startPos.y * this.gridsize + this.gridsize/2;
+        this.slash.x = this.startPos.x * this.gridsize + this.gridsize/2;
+        this.slash.y = this.startPos.y * this.gridsize + this.gridsize/2;
         this.ghost.body.reset(this.startPos.x * this.gridsize + this.gridsize/2, this.startPos.y * this.gridsize + this.gridsize/2);
+        this.slash.body.reset(this.startPos.x * this.gridsize + this.gridsize/2, this.startPos.y * this.gridsize + this.gridsize/2);
         this.currentDir = this.startDir;
         if (this.name === "blinky") this.mode = this.SCATTER;
         else {

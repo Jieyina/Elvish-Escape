@@ -312,11 +312,6 @@ PacmanGame.prototype = {
         this.changeModeTimer = this.time.time + this.TIME_MODES[this.currentMode].time;
         this.gimeMeExitOrder(this.pinky);
         this.gameSound.playBgm();
-
-        this.slashSprite = this.game.add.sprite(8, 13, 'slash');
-        this.slashSprite.animations.add('cut', [0, 1, 2, 3], 12, false);
-        this.slashSprite.anchor.x = 0.5;
-        this.slashSprite.anchor.y = 0.5;
     },
 
     update: function () {
@@ -530,6 +525,7 @@ PacmanGame.prototype = {
     dogEatsDog: function(pacman, ghost) {
         if (Phaser.Math.distance(pacman.x, pacman.y, ghost.x, ghost.y) < 20) {
             if (this[ghost.name].mode === this[ghost.name].RANDOM) {
+                this[ghost.name].slash.play("slash");
                 this.gameSound.playKillEnemy();
                 this[ghost.name].mode = this[ghost.name].RETURNING_HOME;
                 switch(this.killCombo++) {
@@ -546,16 +542,10 @@ PacmanGame.prototype = {
                         this.score += 1600;
                         break;
                 }
-                this.playSlashAnimation(ghost.x, ghost.y);
             } else if (this[ghost.name].mode !== this[ghost.name].RETURNING_HOME) {
                 this.killPacman();
-                this.lastDieTime = this.time.time;
             }
         }
-    },
-
-    checkDieTime: function() {
-        return this.lastDieTime + 2000 <= this.time.time;
     },
 
     getCurrentMode: function() {
@@ -612,12 +602,5 @@ PacmanGame.prototype = {
             }
         }
         return false;
-    },
-
-    playSlashAnimation: function(posX, posY) {
-        this.slashSprite.animations.stop();
-        this.slashSprite.x = posX;
-        this.slashSprite.y = posY;
-        this.slashSprite.play('cut');
     }
 };
