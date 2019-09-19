@@ -1,6 +1,5 @@
 var Bonus = function (game) {
     this.game = game;
-    this.gameSound = new Sounds(this);
 };
 
 Bonus.prototype = {
@@ -42,17 +41,12 @@ Bonus.prototype = {
         this.clydeScatterPos = {x:2, y:17};
         this.returnDes = {x:8, y:3};
         this.exitDes = {x:8, y:4};
-        this.safetile = [13, 14, 15, 23, 25, 33, 34, 35, 41, 51, 24, 86, 85];
+        this.safetile = [13, 14, 15, 23, 25, 33, 34, 35, 41, 51, 24, 86, 85, 72];
         this.SPECIAL_TILES = [];
     },
 
-    preload: function() {
-        this.gameSound.loadAllSounds();
-    },
-
     create: function () {
-        this.gameSound.createAllInstances();
-        this.gameSound.playBonusBgm();
+        this.game.gameSound.playBonusBgm();
 
         this.map = this.add.tilemap('map4');
         this.map.addTilesetImage('Tile_Level4', 'tiles4');
@@ -175,12 +169,12 @@ Bonus.prototype = {
             this.gameWin = true;
             this.score += 1000;
             this.bonusComplete = true;
-            this.gameSound.playLevelComplete();
+            this.game.gameSound.playLevelComplete();
         }
 
         if ((this.gameOver === true || this.gameWin === true) && this.cursors.r.isDown)
         {
-            this.gameSound.clear();
+            this.game.gameSound.clear();
             this.game.state.start("GameOver", true, false, this.score);
         }
 
@@ -252,7 +246,7 @@ Bonus.prototype = {
     dogEatsDog: function(pacman, ghost) {
         if (Phaser.Math.distance(pacman.x, pacman.y, ghost.x, ghost.y) < 20) {
             if (this.ghosts[ghost.index].mode === "random") {
-                this.gameSound.playKillEnemy();
+                this.game.gameSound.playKillEnemy();
                 this.ghosts[ghost.index].mode = "returning_home";
 
                 switch(this.killCombo++) {
@@ -354,7 +348,7 @@ Bonus.prototype = {
     killPacman: function() {
         this.pacman.isDead = true;
         this.stopGhosts();
-        this.gameSound.playPlayerDeath();
+        this.game.gameSound.playPlayerDeath();
         this.gameOver = true;
     },
 

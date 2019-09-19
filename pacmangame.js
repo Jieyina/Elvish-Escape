@@ -2,7 +2,7 @@ var PacmanGame = function (game) {
     this.life = 3;
     this.level = 1;
     this.game = game;
-    this.gameSound = new Sounds(this);
+    this.game.gameSound = new Sounds(this);
 };
 
 PacmanGame.prototype = {
@@ -157,11 +157,11 @@ PacmanGame.prototype = {
     },
 
     preload: function() {
-        this.gameSound.loadAllSounds();
+        this.game.gameSound.loadAllSounds();
     },
 
     create: function () {
-        this.gameSound.createAllInstances();
+        this.game.gameSound.createAllInstances();
 
         switch (this.level)
         {
@@ -311,7 +311,7 @@ PacmanGame.prototype = {
         
         this.changeModeTimer = this.time.time + this.TIME_MODES[this.currentMode].time;
         this.gimeMeExitOrder(this.pinky);
-        this.gameSound.playBgm();
+        this.game.gameSound.playBgm();
     },
 
     update: function () {
@@ -370,7 +370,7 @@ PacmanGame.prototype = {
                 } else {
                     this.sendScatterOrder();
                 }
-                this.gameSound.playBgm();
+                this.game.gameSound.playBgm();
                 console.log("new mode:", this.TIME_MODES[this.currentMode].mode, this.TIME_MODES[this.currentMode].time);
             }
         }
@@ -396,24 +396,24 @@ PacmanGame.prototype = {
 
         if (this.gameOver === true && this.cursors.r.isDown)
         {
-            this.gameSound.clear();
+            this.game.gameSound.clear();
             this.game.state.start("GameOver", true, false, this.score);
         }
         if (this.gameOver === true && this.cursors.s.isDown)
         {
-            this.gameSound.clear();
+            this.game.gameSound.clear();
             this.game.state.start("Bonus", true, false, this.score);
         }
         if (this.gameWin === true && this.cursors.r.isDown)
         {
             if (this.level < 3)
             {
-                this.gameSound.clear();
+                this.game.gameSound.clear();
                 this.game.state.restart(true, false, this.score, this.life, this.level + 1);
             }
             else if (this.level === 3)
             {
-                this.gameSound.clear();
+                this.game.gameSound.clear();
                 this.game.state.start("Bonus", true, false, this.score);
             }
         }
@@ -500,7 +500,7 @@ PacmanGame.prototype = {
             this.ghosts[i].respawn();
         }
         this.pacman.respawn();
-        this.gameSound.playBgm();
+        this.game.gameSound.playBgm();
     },
 
     checkKeys: function () {
@@ -525,7 +525,7 @@ PacmanGame.prototype = {
     dogEatsDog: function(pacman, ghost) {
         if (Phaser.Math.distance(pacman.x, pacman.y, ghost.x, ghost.y) < 20) {
             if (this[ghost.name].mode === this[ghost.name].RANDOM) {
-                this.gameSound.playKillEnemy();
+                this.game.gameSound.playKillEnemy();
                 this[ghost.name].mode = this[ghost.name].RETURNING_HOME;
                 switch(this.killCombo++) {
                     case 0:
@@ -569,7 +569,7 @@ PacmanGame.prototype = {
         {
             this.pacman.isDead = true;
             this.life --;
-            this.gameSound.playPlayerDeath();
+            this.game.gameSound.playPlayerDeath();
             this.stopGhosts();
             this.game.time.events.add(3000, function() {
                 if(this.life <= 0) {
@@ -592,7 +592,7 @@ PacmanGame.prototype = {
         this.gameWin = true;
         this.score += 500;
         this.stopGhosts();
-        this.gameSound.playLevelComplete();
+        this.game.gameSound.playLevelComplete();
         this.door.children[0].play('door-opening');
     },
 

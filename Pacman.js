@@ -182,7 +182,7 @@ Pacman.prototype.eatDot = function(pacman, key) {
     
     this.game.score += 100;
     this.game.numKeys --;
-    this.game.gameSound.playPickupKey();
+    this.game.game.gameSound.playPickupKey();
 
     if (this.game.numKeys > 0)
         this.game.keys.getChildAt(4 - this.game.numKeys).revive();
@@ -209,7 +209,7 @@ Pacman.prototype.eatPill = function(pacman, pill) {
     this.game.killCombo = 0;
 
     this.sprite.play('armed');
-    this.game.gameSound.playBgmAttack();
+    this.game.game.gameSound.playBgmAttack();
     for (var i=0; i<this.game.ghosts.length; i++) {
         this.game.ghosts[i].enterFrightenedMode();
     }
@@ -222,13 +222,13 @@ Pacman.prototype.pickTreasure = function(pacman, treasure) {
     {
         treasure.kill();
         this.game.score += 200;
-        this.game.gameSound.playTreasurePick();
+        this.game.game.gameSound.playTreasurePick();
     }
     if (i === 1 && this.game.treasureUnlocked[1] === true)
     {
         treasure.kill();
         this.game.score += 200;
-        this.game.gameSound.playTreasurePick();
+        this.game.game.gameSound.playTreasurePick();
     }
 };
 
@@ -309,5 +309,5 @@ Pacman.prototype.respawn = function () {
 Pacman.prototype.unlockTreasure = function (treasure) {
     this.game.treasureUnlocked.push(true);
     treasure.play('unlock');
-    this.game.gameSound.playTreasureReveal();
+    this.game.game.gameSound.playTreasureReveal();
 };

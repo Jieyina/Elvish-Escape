@@ -12,7 +12,6 @@ Sounds.prototype.loadAllSounds = function() {
     this.game.load.audio('bgm-level-complete', 'assets/audio/bgm-level-complete.wav');
     this.game.load.audio('treasure-pick', 'assets/audio/Pac_Man_design_one_Pick_up_Treasure.wav');
     this.game.load.audio('treasure-unlock', 'assets/audio/Pac_Man_design_one_Treasure_Reveal.wav');
-    this.game.load.audio('bonus-bgm', 'assets/audio/Bonus Level.wav')
 };
 
 Sounds.prototype.createAllInstances = function() {
@@ -25,7 +24,6 @@ Sounds.prototype.createAllInstances = function() {
     this.level_complete = this.game.add.audio('bgm-level-complete', 1, false);
     this.treasure_pick = this.game.add.audio('treasure-pick', 1, false);
     this.treasure_up = this.game.add.audio('treasure-unlock', 1, false);
-    this.bonus = this.game.add.audio('bonus-bgm', 1, false);
 };
 
 Sounds.prototype.playBgm = function() {
