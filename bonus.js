@@ -352,7 +352,7 @@ Bonus.prototype = {
     },
 
     gimeMeExitOrder: function(ghost) {
-        this.game.time.events.add(15000, this.sendExitOrder, this, ghost);
+        this.game.time.events.add(20000, this.sendExitOrder, this, ghost);
     },
 
     killPacman: function() {

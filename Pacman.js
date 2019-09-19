@@ -287,7 +287,6 @@ Pacman.prototype.checkSafetile = function(tileIndex) {
 };
 
 Pacman.prototype.respawn = function () {
-    // console.log("pac respawn");
     this.isDead = false;
     this.sprite.x = this.startPos.x * this.gridsize + this.gridsize/2;
     this.sprite.y = this.startPos.y * this.gridsize + this.gridsize/2;

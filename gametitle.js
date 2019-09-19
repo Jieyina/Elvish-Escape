@@ -19,7 +19,7 @@ gameTitle.prototype = {
 	update: function() {
 		if(this.game.input.keyboard.isDown(Phaser.Keyboard.ENTER)) {
 			this.bgm_menu.stop();
-			this.game.state.start("TheGame");
+			this.game.state.start("IntroScreen");
 		}
 	}
 };

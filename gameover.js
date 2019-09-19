@@ -14,7 +14,7 @@ gameOver.prototype = {
 
     update: function() {
         if(this.game.input.keyboard.isDown(Phaser.Keyboard.ENTER)) {
-            this.game.state.start("TheGame", true, false, 1);
+            this.game.state.start("TheGame", true, false, 0, 3, 1);
         }
     }
 };
